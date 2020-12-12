@@ -76,7 +76,13 @@ int countArestas(int size, int *arestas, int (*grafo)[size], int row){
     return count;
 }
 
-
+/*
+Recebe uma aresta na forma de par e adiciona a matriz de adjacencia
+*/
+void addAresta( int size, int i, int j, int (*matriz)[size]){
+  matriz[i][j] = 1;
+  matriz[j][i] = 1;
+}
 
 /*------------------------------------------------------------------------------------------------*/
 /*
@@ -198,33 +204,43 @@ void fill_matrix( int size, int value, int (*vector)[size]){
 
 int main(){
 
-  /*
-  0, 1, 0, 1, 1, 1, 
-  1, 0, 1, 0, 1, 0, 
-  0, 1, 0, 1, 1, 0, 
-  1, 0, 1, 0, 1, 1, 
-  1, 1, 1, 1, 0, 0, 
-  1, 0, 0, 1, 0, 0,
-  */ 
-  // fill matrix with 0
-
-
   // validar se é INT
   int matrix_size;
-  printf("digite o tamanho da matriz tam x tam\n");
+  printf("Digite o tamanho da matriz: TxT\n");
   scanf("%d", &matrix_size);
-
 
   // permitir inserir a matriz na forma de pares ou item por item
   int grafo[matrix_size][matrix_size];
   fill_matrix(matrix_size, 0, grafo);
-
-  printf("digita todos os %d itens da matriz\n", (matrix_size * matrix_size));
-  // validar se input é 0 ou 1
-  for(int i = 0; i < matrix_size; i++){
-    for(int j = 0; j < matrix_size; j++ ){
-      scanf("%d", &grafo[i][j]);
-    }
+  
+  int n_arestas;
+  char option;
+  getchar();
+  printf("Digite 'A' para inserir uma matriz de adjacencia ou digite 'B' para inserir as arestas do grafo.\n");
+  scanf("%c", &option );
+  switch(option){
+    case 'A':
+      printf("Insira os %d valores da matriz de adjacencia, cada valor inserido deve ser 0 ou 1 e devem ser separados por espaço!\n", (matrix_size * matrix_size));
+      // validar se input é 0 ou 1
+      for(int i = 0; i < matrix_size; i++){
+        for(int j = 0; j < matrix_size; j++ ){
+          scanf("%d", &grafo[i][j]);
+        }
+      }
+      break;
+    case 'B':
+      printf("Digite quantas arestas o grafo possui!\n");
+      scanf("%d", &n_arestas);
+      printf("Digite os %d pares, cada par deve ser inserido no formato 'x-y'.\n", n_arestas);
+      for(int i = 0; i < n_arestas; i++){
+        int x,y;
+        scanf("%d-%d", &x, &y);
+        addAresta(matrix_size, x, y, grafo);
+      }
+      break;
+    default:
+      printf("Opção inválida\n");
+      break;
   }
 
   printf("\nMATRIZ\n");
@@ -234,7 +250,6 @@ int main(){
     }
     printf("\n");
   }
-  //0 1 0 1 1 1 1 0 1 0 1 0 0 1 0 1 1 0 1 0 1 0 1 1 1 1 1 1 0 0 1 0 0 1 0 0
 
   int start = buscarInicial(matrix_size, grafo); 
 
