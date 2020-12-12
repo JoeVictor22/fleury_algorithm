@@ -61,19 +61,23 @@ retorna a quantidade de arestas de um vertice e anexa a um vetor as arestas
 */
 int countArestas(int size, int *arestas, int (*grafo)[size], int row){
     int count = 0;
+    printf("arestas conectados a linha %d\n", row);
     for(int i = 0; i < size; i++){
         if(grafo[row][i] == 1){
             arestas[count] = i;
             count++;
+            printf("%d ", i);
         }
     }
+    printf("\nquantidade de arestas: %d\n", count);
     return count;
 }
 /*------------------------------------------------------------------------------------------------*/
 
 void fleury(int size, int (*grafo)[size], int start){
     bool flag = true;
-    int vertices = size;
+    int vertices = size-1;
+    int vertices_acessiveis = 0;
     int v_ini = start;
 
     // VARs para registrar caminho percorrido
@@ -81,7 +85,6 @@ void fleury(int size, int (*grafo)[size], int start){
     caminho[0] = v_ini;
     int passos = 0;
 
-    bool da_ok = false;
     while(flag){
         flag = true;
 
@@ -89,48 +92,60 @@ void fleury(int size, int (*grafo)[size], int start){
         int n_arestas_vertice = 0;
         n_arestas_vertice = countArestas(size, arestas_vertice, grafo, v_ini);
 
-        for (int aresta = 0 ; aresta < n_arestas_vertice; aresta++){
-               //copy graph and remove bridge
-                //test bfs in graph
-                int copy[size][size];
-                copy_graph(size, copy, grafo);
-                copy[v_ini][arestas_vertice[aresta]] = 0;
-                copy[arestas_vertice[aresta]][v_ini] = 0; 
-                
-                /* 
-                    vou ter q verificar se ao remover esse ponto, tds os outros serao alcancados
-                */
-                da_ok = false;
-            for (int i = 0; i < size; i++){      
+        int aresta;
+        for (aresta = 0 ; aresta < n_arestas_vertice; aresta++){
+            //copy graph and remove bridge
+          //test bfs in graph
+          int copy[size][size];
+          copy_graph(size, copy, grafo);
+          copy[v_ini][arestas_vertice[aresta]] = 0;
+          copy[arestas_vertice[aresta]][v_ini] = 0;
+          /* 
+              vou ter q verificar se ao remover esse ponto, tds os outros serao alcancados
+          */
 
-                //int **grafo, int start, int end, int size
-                da_ok = bfs(size, copy, v_ini, i);
-                //printf("BFS: %c - %d - %d = %d = %d\n", (da_ok ? 'S': 'N' ), aresta, i, n_arestas_vertice, size);
-                if (!da_ok){
-                    i = size;
-
-                }   
-                /* se o numero de arestas nesse ponto é igual a 1, ou se ao remover a ponte
-                ainda é possivel chegar no fim, usar esse vertice
-                */
-                /* (esquece, acho q ajeitei) -> verificar se o n_vertices == 1 n vai acarretar em erro, ja q qnd houvesse 2
-                vertices, n ira haver verificacao de bfs
-                */
-
-            }
+          //int **grafo, int start, int end, int size
+          vertices_acessiveis = bfs(size, copy, v_ini);
+          printf("BFS: v_ini: %d, aresta: %d, vert_rest: %d, acess: %d\n\n", v_ini, arestas_vertice[aresta], vertices, vertices_acessiveis);
+          char c;
+          scanf("%c", &c);
+          //printf("BFS: %c - %d - %d = %d = %d\n", (da_ok ? 'S': 'N' ), aresta, i, n_arestas_vertice, size);
+          if (vertices_acessiveis+1 >= vertices ){
+            /* se o numero de arestas nesse ponto é igual a 1, ou se ao remover a ponte
+            ainda é possivel chegar no fim, usar esse vertice
+            */
+            /* (esquece, acho q ajeitei) -> verificar se o n_vertices == 1 n vai acarretar em erro, ja q qnd houvesse 2
+            vertices, n ira haver verificacao de bfs
+            */
 
             passos++;
+            for(int i = 0; i < size; i++){
+              if(caminho[i] == arestas_vertice[aresta]){
+                printf("ja visitei");
+                vertices++;
+                break; 
+              }
+            }
+
             caminho[passos] = arestas_vertice[aresta];
             printf("%d -> %d\n", v_ini, arestas_vertice[aresta]);
             grafo[v_ini][arestas_vertice[aresta]] = 0;
             grafo[arestas_vertice[aresta]][v_ini] = 0; 
+
+            
+         
+
             vertices--; 
             v_ini = arestas_vertice[aresta];
 
             // break from inner and outer loops
-            aresta = n_arestas_vertice;
-            
+            break;
+          }
         }
+        if( aresta >= n_arestas_vertice){
+          flag = false;
+        }
+
         
        
     }
@@ -149,66 +164,49 @@ void fleury(int size, int (*grafo)[size], int start){
 /*------------------------------------------------------------------------------------------------*/
 
 
+void fill_matrix( int size, int value, int (*vector)[size]){
+  for(int i = 0; i < size; i++){
+    for(int j = 0; j < size; j++){
+      vector[i][j] = value;
+    }
+  }
+}
 
 int main(){
 
-/*
-0, 1, 0, 1, 1, 1, 
-1, 0, 1, 0, 1, 0, 
-0, 1, 0, 1, 1, 0, 
-1, 0, 1, 0, 1, 1, 
-1, 1, 1, 1, 0, 0, 
-1, 0, 0, 1, 0, 0,
-*/ 
-
-    grafo[0][0] = 0;
-    grafo[0][1] = 1;
-    grafo[0][2] = 0;
-    grafo[0][3] = 1;
-    grafo[0][4] = 1;
-    grafo[0][5] = 1;
-
-    grafo[1][0] = 1;
-    grafo[1][1] = 0;
-    grafo[1][2] = 1;
-    grafo[1][3] = 0;
-    grafo[1][4] = 1;
-    grafo[1][5] = 0;
-
-    grafo[2][0] = 0;
-    grafo[2][1] = 1;
-    grafo[2][2] = 0;
-    grafo[2][3] = 1;
-    grafo[2][4] = 1;
-    grafo[2][5] = 0;
-
-    grafo[3][0] = 1;
-    grafo[3][1] = 0;
-    grafo[3][2] = 1;
-    grafo[3][3] = 0;
-    grafo[3][4] = 1;
-    grafo[3][5] = 1;
-
-    grafo[4][0] = 1;
-    grafo[4][1] = 1;
-    grafo[4][2] = 1;
-    grafo[4][3] = 1;
-    grafo[4][4] = 0;
-    grafo[4][5] = 0;
-
-    grafo[5][0] = 1;
-    grafo[5][1] = 0;
-    grafo[5][2] = 0;
-    grafo[5][3] = 1;
-    grafo[5][4] = 0;
-    grafo[5][5] = 0;
+  /*
+  0, 1, 0, 1, 1, 1, 
+  1, 0, 1, 0, 1, 0, 
+  0, 1, 0, 1, 1, 0, 
+  1, 0, 1, 0, 1, 1, 
+  1, 1, 1, 1, 0, 0, 
+  1, 0, 0, 1, 0, 0,
+  */ 
+  // fill matrix with 0
+  fill_matrix(NODE, 0, grafo);
 
 
+  printf("digita todos os %d itens da matriz\n", (NODE * NODE));
+  // validar se input é 0 ou 1
+  for(int i = 0; i < NODE; i++){
+    for(int j = 0; j < NODE; j++ ){
+      scanf("%d", &grafo[i][j]);
+    }
+  }
 
-    int start = buscarInicial(NODE, grafo); 
+  printf("\nMATRIZ\n");
+  for(int i = 0; i < NODE; i++){
+    for(int j = 0; j < NODE; j++ ){
+      printf("%d ", grafo[i][j]);
+    }
+    printf("\n");
+  }
+  //0 1 0 1 1 1 1 0 1 0 1 0 0 1 0 1 1 0 1 0 1 0 1 1 1 1 1 1 0 0 1 0 0 1 0 0
 
-    printf("start: %d\n", start);
-    fleury(NODE, grafo, start);
+  int start = buscarInicial(NODE, grafo); 
 
-    return 0;
+  printf("\nstart: %d\n", start);
+  fleury(NODE, grafo, start);
+
+  return 0;
 }

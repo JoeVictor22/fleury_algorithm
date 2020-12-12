@@ -56,7 +56,7 @@ void push_back(int *fila, int size, int value){
 
 
 /*------------------------------------------------------------------------------------------------*/
-bool bfs(int size, int (*grafo)[size], int start, int end){
+int bfs(int size, int (*grafo)[size], int start){
     bool visited[size];
 
     for(int i = 0; i < size; i++){
@@ -70,12 +70,8 @@ bool bfs(int size, int (*grafo)[size], int start, int end){
     char c;
     visited[start] = true;
     int vis;
-    int v_ini;
     while(!empty(q, size)){
         vis = q[0];
-        if(vis == -1){
-            vis = 0;
-        }
 
         erase(q, size, 0);      
 
@@ -89,10 +85,16 @@ bool bfs(int size, int (*grafo)[size], int start, int end){
    
     }
 
-    if (visited[end]){
-        return true;
+    int count = 0;
+    printf("grafos visitados a partir de %d\n", start);
+    for(int i = 0; i < size; i++){
+        printf("%c, ", (visited[i]? 'S': 'N'));
+        if(visited[i] == true){
+            count++;
+        }
     }
+    printf("\n\n");
 
-    return false;
+    return count;
 
 }
