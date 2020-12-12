@@ -140,13 +140,37 @@ void fleury(int size, int (*grafo)[size], int start){
 
             // break from inner and outer loops
             break;
+          }else{
+            printf("VAI PRO PROX PFV\n\n");
           }
         }
-        if( aresta >= n_arestas_vertice){
+      
+        if( aresta == n_arestas_vertice){
+            passos++;
+            for(int i = 0; i < size; i++){
+              if(caminho[i] == arestas_vertice[aresta]){
+                printf("ja visitei");
+                vertices++;
+                break; 
+              }
+            }
+
+            caminho[passos] = arestas_vertice[aresta];
+            printf("%d -> %d\n", v_ini, arestas_vertice[aresta]);
+            grafo[v_ini][arestas_vertice[aresta]] = 0;
+            grafo[arestas_vertice[aresta]][v_ini] = 0; 
+
+            
+         
+
+            vertices--; 
+            v_ini = arestas_vertice[aresta];
+
+            // break from inner and outer loops
+        }else if(vertices == vertices_acessiveis){
+          printf("exception");
           flag = false;
         }
-
-        
        
     }
 
