@@ -80,7 +80,7 @@ void print_graph(int size, int (*grafo)[size]){
     }
 }
 void print_row(int size, int *vector){
-    printf("LINHA:\n");
+    printf("\nLINHA:\n");
     for(int i = 0; i < size; i++){
         printf("%d ", vector[i]);
     }

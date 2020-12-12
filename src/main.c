@@ -80,26 +80,27 @@ bool isValidNextEdge(int start, int end, int *adjacentes, int n_arestas_vertice,
     }
   }
 
-  //printf("\ncount_aresta: %d", count);
-
+  printf("\ncount_aresta: %d", count);
+  print_row(n_arestas_vertice, adjacentes);
   if (count == 1){
+    int dfs_c_aresta = dfs(size, grafo, end);
+  
+    // copy of graph without aresta
+    int copy[size][size];
+    copy_graph(size, copy, grafo);
+    
+    copy[start][end] = 0;
+    copy[end][start] = 0;
+
+    int dfs_s_aresta = dfs(size, copy, end);
+    printf("\ndfs c aresta: %d", dfs_c_aresta);
+    printf("\ndfs s aresta: %d", dfs_s_aresta);
+
+    return (dfs_c_aresta > dfs_s_aresta) ? false : true;
+
+  }else {
     return true;
   }
-
-  int dfs_c_aresta = dfs(size, grafo, end);
-  
-  // copy of graph without aresta
-  int copy[size][size];
-  copy_graph(size, copy, grafo);
-  
-  copy[start][end] = 0;
-  copy[end][start] = 0;
-
-  int dfs_s_aresta = dfs(size, copy, end);
-  //printf("\ndfs c aresta: %d", dfs_c_aresta);
-  //printf("\ndfs s aresta: %d", dfs_s_aresta);
-
-  return (dfs_c_aresta > dfs_s_aresta) ? false : true;
 
 }
 /*------------------------------------------------------------------------------------------------*/
