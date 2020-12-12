@@ -205,6 +205,7 @@ void fill_matrix( int size, int value, int (*vector)[size]){
 int main(){
 
   // validar se é INT
+  // validar se é maior que 0
   int matrix_size;
   printf("Digite o tamanho da matriz: TxT\n");
   scanf("%d", &matrix_size);
@@ -220,6 +221,7 @@ int main(){
   scanf("%c", &option );
   switch(option){
     case 'A':
+    case 'a':
       printf("Insira os %d valores da matriz de adjacencia, cada valor inserido deve ser 0 ou 1 e devem ser separados por espaço!\n", (matrix_size * matrix_size));
       // validar se input é 0 ou 1
       for(int i = 0; i < matrix_size; i++){
@@ -229,6 +231,9 @@ int main(){
       }
       break;
     case 'B':
+    case 'b':
+      // validar se o numero de arestas é int
+      // validar se input é 0 ou 1
       printf("Digite quantas arestas o grafo possui!\n");
       scanf("%d", &n_arestas);
       printf("Digite os %d pares, cada par deve ser inserido no formato 'x-y'.\n", n_arestas);
@@ -240,10 +245,11 @@ int main(){
       break;
     default:
       printf("Opção inválida\n");
+      return 0;
       break;
   }
 
-  printf("\nMATRIZ\n");
+  printf("\nMATRIZ INSERIDA\n");
   for(int i = 0; i < matrix_size; i++){
     for(int j = 0; j < matrix_size; j++ ){
       printf("%d ", grafo[i][j]);
@@ -252,11 +258,10 @@ int main(){
   }
 
   int start = buscarInicial(matrix_size, grafo); 
-
-  printf("\nstart: %d\n", start);
   
-  fleury(matrix_size, grafo, start);
+  printf("\nVERTICE DE PARTIDA: %d\n", start);
 
+  fleury(matrix_size, grafo, start);
   
   /*TODO  na saida informar algumas caracteristicas do grafo
     verificar se forma ciclo, se é euleriano ou se não é 
