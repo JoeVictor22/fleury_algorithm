@@ -8,6 +8,10 @@ int grafo[NODE][NODE];
 
 
 /*------------------------------------------------------------------------------------------------*/
+/*
+Busca o vertice mais indicado para dar inicio no caminho
+busca um vertice com degrau impar, caso nao exista nenhum, retorna um vertice qualquer do grafo
+*/
 int buscarInicial(int numVert, int (*grafo)[numVert]){
 
 
@@ -34,6 +38,9 @@ int buscarInicial(int numVert, int (*grafo)[numVert]){
 
 }   
 /*------------------------------------------------------------------------------------------------*/
+/*
+Calcula a quantidade de arestas de dado vertice
+*/
 int qtdArestas(int numVert, int (*grafo)[numVert]){
   printf("vertice=%d\n",numVert);
   int arestas=0;
@@ -47,6 +54,9 @@ int qtdArestas(int numVert, int (*grafo)[numVert]){
 }
 /*------------------------------------------------------------------------------------------------*/
 
+/*
+Realiza a copia de um grafo
+*/
 void copy_graph(int size, int (*copy)[size], int (*orig)[size]){   
     for( int i = 0; i < size; i++){
         for(int j = 0; j < size; j++){
@@ -57,7 +67,7 @@ void copy_graph(int size, int (*copy)[size], int (*orig)[size]){
 /*------------------------------------------------------------------------------------------------*/
 
 /*
-retorna a quantidade de arestas de um vertice e anexa a um vetor as arestas 
+Retorna a quantidade de arestas de um vertice e salva essas vertices em um vetor 
 */
 int countArestas(int size, int *arestas, int (*grafo)[size], int row){
     int count = 0;
@@ -74,6 +84,9 @@ int countArestas(int size, int *arestas, int (*grafo)[size], int row){
 }
 /*------------------------------------------------------------------------------------------------*/
 
+/*
+Busca um caminho ou ciclo euleriano no grafo e avalia algumas caracteristicas do grafo
+*/
 void fleury(int size, int (*grafo)[size], int start){
     bool flag = true;
     int vertices = size-1;
@@ -187,13 +200,23 @@ void fleury(int size, int (*grafo)[size], int start){
 } 
 /*------------------------------------------------------------------------------------------------*/
 
-
+/*
+Preenche dada matriz com um valor recebido
+*/
 void fill_matrix( int size, int value, int (*vector)[size]){
   for(int i = 0; i < size; i++){
     for(int j = 0; j < size; j++){
       vector[i][j] = value;
     }
   }
+}
+
+/*
+Recebe uma aresta na forma de par e adiciona a matriz de adjacencia
+*/
+void addAresta( int size, int i, int j, int (*matriz)[size]){
+  matriz[i][j] = 1;
+  matriz[j][i] = 1;
 }
 
 int main(){
@@ -208,7 +231,6 @@ int main(){
   */ 
   // fill matrix with 0
   fill_matrix(NODE, 0, grafo);
-
 
   printf("digita todos os %d itens da matriz\n", (NODE * NODE));
   // validar se input é 0 ou 1
@@ -225,7 +247,6 @@ int main(){
     }
     printf("\n");
   }
-  //0 1 0 1 1 1 1 0 1 0 1 0 0 1 0 1 1 0 1 0 1 0 1 1 1 1 1 1 0 0 1 0 0 1 0 0
 
   int start = buscarInicial(NODE, grafo); 
 

@@ -6,13 +6,19 @@
 /*------------------------------------------------------------------------------------------------*/
 
 /*------------------------------------------------------------------------------------------------*/
-//int *start_vector(int *vector, int size){
+/*
+Para implementar a DFS de forma iterativa, usamos um vetor de inteiros que ira ser interpretado como 
+uma pilha. O estado vazio de um posicao da pilha é indicado por -1, e as funcoes para operar sobre
+a pilha estão implementadas a seguir
+*/
+/*                PILHA                */
 void start_vector(int *vector, int size){
     for(int i=0; i < size;i++){
         vector[i] = -1;
     }
 }
 
+// TODO mudar o nome das funcoes e variaveis
 // o indicador se a posicao esta vazia é -1
 bool empty(int *pilha, int size){
     for(int i=0; i < size; i++){
@@ -63,13 +69,16 @@ int pop(int *pilha,int size){
 
     return aux;
 }
+/*                END                */
 
+/*
+Funcoes auxiliares usadas para DEBUG do codigo
+*/
 void copy_graph_row(int size, int *copy, int (*orig)[size], int row){   
     for(int j = 0; j < size; j++){
         copy[j] = orig[row][j];
     }
 }
-
 void print_graph(int size, int (*grafo)[size]){
     printf("\nGRAFO:\n");
     for( int i =0 ; i < size; i++){
@@ -86,8 +95,13 @@ void print_row(int size, int *vector){
     }
     printf("\n");
 }
-// 1, 2, 3, -1, -1, -1, -1
+
+
 /*------------------------------------------------------------------------------------------------*/
+/*
+Implementacao iterativa do DFS modificada para retornar a quantidade de arestas acessiveis dado um 
+vertice inicial
+*/
 int dfs(int size, int (*grafo)[size], int inicial){
     //Pilha de proximos a entrar na DFS
     int pilha[size];

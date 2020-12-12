@@ -5,6 +5,10 @@
 
 
 /*------------------------------------------------------------------------------------------------*/
+/*
+Busca o vertice mais indicado para dar inicio no caminho
+busca um vertice com degrau impar, caso nao exista nenhum, retorna um vertice qualquer do grafo
+*/
 int buscarInicial(int numVert, int (*grafo)[numVert]){
 
 
@@ -31,6 +35,9 @@ int buscarInicial(int numVert, int (*grafo)[numVert]){
 
 }   
 /*------------------------------------------------------------------------------------------------*/
+/*
+Calcula a quantidade de arestas de dado vertice
+*/
 int qtdArestas(int numVert, int (*grafo)[numVert]){
   printf("vertice=%d\n",numVert);
   int arestas=0;
@@ -43,7 +50,9 @@ int qtdArestas(int numVert, int (*grafo)[numVert]){
   return arestas;
 }
 /*------------------------------------------------------------------------------------------------*/
-
+/*
+Realiza a copia de um grafo
+*/
 void copy_graph(int size, int (*copy)[size], int (*orig)[size]){   
     for( int i = 0; i < size; i++){
         for(int j = 0; j < size; j++){
@@ -54,7 +63,7 @@ void copy_graph(int size, int (*copy)[size], int (*orig)[size]){
 /*------------------------------------------------------------------------------------------------*/
 
 /*
-retorna a quantidade de arestas de um vertice e anexa a um vetor as arestas 
+Retorna a quantidade de arestas de um vertice e salva essas vertices em um vetor 
 */
 int countArestas(int size, int *arestas, int (*grafo)[size], int row){
     int count = 0;
@@ -70,6 +79,9 @@ int countArestas(int size, int *arestas, int (*grafo)[size], int row){
 
 
 /*------------------------------------------------------------------------------------------------*/
+/*
+TODO, raynan explica melhor isso aq
+*/
 bool isValidNextEdge(int start, int end, int *adjacentes, int n_arestas_vertice,
                      int size, int (*grafo)[size]){
   
@@ -85,6 +97,8 @@ bool isValidNextEdge(int start, int end, int *adjacentes, int n_arestas_vertice,
   if (count == 1){
     int dfs_c_aresta = dfs(size, grafo, end);
   
+
+    // TODO tentar remover a copia de grafos
     // copy of graph without aresta
     int copy[size][size];
     copy_graph(size, copy, grafo);
@@ -104,7 +118,9 @@ bool isValidNextEdge(int start, int end, int *adjacentes, int n_arestas_vertice,
 
 }
 /*------------------------------------------------------------------------------------------------*/
-
+/*
+Busca um caminho ou ciclo euleriano no grafo e avalia algumas caracteristicas do grafo
+*/
 void fleury(int size, int (*grafo)[size], int start){
   int vertices_visitados = 0;
   int v = start;
@@ -169,7 +185,9 @@ void fleury(int size, int (*grafo)[size], int start){
 } 
 /*------------------------------------------------------------------------------------------------*/
 
-
+/*
+Preenche dada matriz com um valor recebido
+*/
 void fill_matrix( int size, int value, int (*vector)[size]){
   for(int i = 0; i < size; i++){
     for(int j = 0; j < size; j++){
@@ -190,10 +208,14 @@ int main(){
   */ 
   // fill matrix with 0
 
+
+  // validar se é INT
   int matrix_size;
   printf("digite o tamanho da matriz tam x tam\n");
   scanf("%d", &matrix_size);
 
+
+  // permitir inserir a matriz na forma de pares ou item por item
   int grafo[matrix_size][matrix_size];
   fill_matrix(matrix_size, 0, grafo);
 
@@ -219,6 +241,11 @@ int main(){
   printf("\nstart: %d\n", start);
   
   fleury(matrix_size, grafo, start);
+
+  
+  /*TODO  na saida informar algumas caracteristicas do grafo
+    verificar se forma ciclo, se é euleriano ou se não é 
+  */
 
   return 0;
 }
