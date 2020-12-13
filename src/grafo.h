@@ -6,7 +6,6 @@
 /*Utilitarios para ser utilizado no Grafo necessario para a aplicação                */
 /*-----------------------------------------------------------------------------------*/
 
-
 // Cria uma copia do grafo
 void copiarGrafo(int size, int (*copy)[size], int (*orig)[size]){   
     for( int i = 0; i < size; i++){
@@ -85,21 +84,27 @@ bool ehArestaCorte(int start, int end, int *adjacentes, int n_arestas_vertice,
   
   // Caso o Bertice só possua uma Aresta é realizado uma DFS a fim de reconhecer se ele é uma "Aresta de corte"
   if (count == 1){
-	// Salva a quantidade de Vertices acessiveis com a Aresta presente no grafo
+  	// Salva a quantidade de Vertices acessiveis com a Aresta presente no grafo
     int dfs_c_aresta = dfs(size, grafo, end);
     
-	/*TODO RETIRAR TALVEZ*/
-	int copy[size][size];
-    copiarGrafo(size, copy, grafo);
-    copy[start][end] = 0;
-    copy[end][start] = 0;
+    grafo[end][start] = 0;
+    grafo[start][end] = 0;
 
-	// Salva a quantidade de Vertices acessiveis sem a Aresta presente no grafo
-    int dfs_s_aresta = dfs(size, copy, end);
+  	// Salva a quantidade de Vertices acessiveis sem a Aresta presente no grafo
+    int dfs_s_aresta = dfs(size, grafo, end);
 
-	// Ao comparar o resultado retornado pelas DFS's é definido se a aresta será usada.
+    grafo[end][start] = 1;
+    grafo[start][end] = 1;
+
+  	// Ao comparar o resultado retornado pelas DFS's é definido se a aresta será usada.
     return (dfs_c_aresta > dfs_s_aresta) ? false : true;
-  }else {
+  
+  /* Caso não seja possivel determinar via uma dfs, essa aresta sera considerada de corte se e somente se a quantidade de
+   vertices conectados seja igual a 0
+  */
+  }else if(count > 1){
+    return false;
+  }else{
     return true;
   }
 }

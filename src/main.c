@@ -3,7 +3,7 @@
 #include "dfs.h"
 #include "grafo.h"
 
-#define MAX_SIZE 100
+#define MAX_SIZE 45
 #define MIN_SIZE 2
 
 
@@ -67,40 +67,40 @@ void fleury(int size, int (*grafo)[size], int start){
     // Itera sobre as arestas
     int i;
     for (i = 0; i < n_arestas_vertice; i++){
-      // V recebe a Aresta 
+    // V recebe a Aresta 
 	  v = arestas_vertice[i];
 	  
-      // Verfica se a posição no Grafo é valida e se a Aresta não é de corte
+     // Verfica se a posição no Grafo é valida e se a Aresta não é de corte
       if (grafo[start][v] == 1 && ehArestaCorte(start, v, arestas_vertice, n_arestas_vertice, size, grafo)){
-		// Caso a Aresta seja validada ela é removida do Grafo
+	    	// Caso a Aresta seja validada ela é removida do Grafo
         grafo[start][v] = 0;
         grafo[v][start] = 0;
 		
-		// O ponto final da Aresta é se torna o ponto inicial para as proximas verificações
+	    	// O ponto final da Aresta é se torna o ponto inicial para as proximas verificações
         start = v;  
 		
-		// Guarda o Vertice para printar caminho
+	    	// Guarda o Vertice para printar caminho
         caminho[vertices_visitados] = start; 
         vertices_visitados++;
         break;
       }
     }
 	
-	// Caso o Vertice não seja validado anteriormente é escolha a ultima Aresta
+	  // Caso o Vertice não seja validado anteriormente é escolha a ultima Aresta
     if(i >= n_arestas_vertice){
-		// Remove a Aresta do Grafo
+        // Remove a Aresta do Grafo
         grafo[start][v] = 0;
         grafo[v][start] = 0; 
 		
-		// O ponto final da Aresta é se torna o ponto inicial para as proximas verificações
+        // O ponto final da Aresta é se torna o ponto inicial para as proximas verificações
         start = v;
 		
-		// Guarda o Vertice para printar caminho
+        // Guarda o Vertice para printar caminho
         caminho[vertices_visitados] = start; 
         vertices_visitados++;
     }
 
-	// Caso de saida uma Vertice que não possui Arestas
+  	// Caso de saida uma Vertice que não possui Arestas
     if(n_arestas_vertice == 0){
 	  // Remove pois visita a si mesmo garantindo ser o ultimo ponto
 	  vertices_visitados--; 
@@ -154,10 +154,10 @@ int main(){
       for(int i = 0; i < matrix_size; i++){
         for(int j = 0; j < matrix_size; j++ ){
           // Recebe a entrada do usuario
-		  int temp;
+	    	  int temp;
           scanf("%d", &temp);
 		  
-		  // Valida a entrada do usuario, os valores podem ser somente 0 ou 1
+		      // Valida a entrada do usuario, os valores podem ser somente 0 ou 1
           if(temp != 0 && temp != 1){
             printf("Valor invalido, insira 1 ou 0!\n");
             getchar();
@@ -170,25 +170,25 @@ int main(){
       break;
     case 'B':
     case 'b':
-	  // Recebe a quantidade de arestas no grafo
+	   // Recebe a quantidade de arestas no grafo
       printf("Digite quantas arestas o grafo possui!\n");
       scanf("%d", &n_arestas);
       getchar();
       
-	  // Valida a entrada do usuario, o grafo deve possuir no minimo 1 Aresta
+	    // Valida a entrada do usuario, o grafo deve possuir no minimo 1 Aresta
       if(n_arestas <= 0){
         printf("O número de arestas digitado é invalido!\n");
         return 0;
       }
 
-	  // Recebe os pares de arestas no formato x-y
+	    // Recebe os pares de arestas no formato x-y
       printf("Digite os %d pares, cada par deve ser inserido no formato 'x-y'.\n", n_arestas);
       for(int i = 0; i < n_arestas; i++){
         int x,y;
         scanf("%d-%d", &x, &y);
         printf("\nPAR: %d -> %d\n", x, y);
 		
-		// Valida se a Aresta esta contida no Grafo
+	    	// Valida se a Aresta esta contida no Grafo
         if(x < 0 || y < 0 || x >= matrix_size || y >= matrix_size ){
           printf("\nValor inválido, digite valores de 0 ate %d\n", matrix_size-1);
           getchar();
@@ -198,8 +198,7 @@ int main(){
         }
       }
       break;
-	
-	// Valida o caso de entrada
+  	// Valida o caso de entrada
     default:
       printf("Opção inválida\n");
       return 0;

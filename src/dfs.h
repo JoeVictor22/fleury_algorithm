@@ -3,6 +3,7 @@
 
 
 /*------------------------------------------------HEADERS-------------------------------------------------*/
+// Import explicito de funcoes do grafo.h para evitar erros 
 void copiarGrafo(int size, int (*copy)[size], int (*orig)[size]);   
 void copiarGrafoLinha(int size, int *copy, int (*orig)[size], int row);   
 void printGrafo(int size, int (*grafo)[size]);
