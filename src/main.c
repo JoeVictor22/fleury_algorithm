@@ -219,6 +219,12 @@ int main(){
       for(int i = 0; i < n_arestas; i++){
         int x,y;
         scanf("%d-%d", &x, &y);
+        
+        if(x >= matrix_size || y >= matrix_size ){
+          printf("Valor inválido");
+          return 0;
+        }
+
         addAresta(matrix_size, x, y, grafo);
       }
       break;
@@ -237,7 +243,6 @@ int main(){
   }
 
   int start = buscarInicial(matrix_size, grafo); 
-  
 
   fleury(matrix_size, grafo, start);
   
