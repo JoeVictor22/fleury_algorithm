@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include "dfs.h"
+#include "grafo.h"
 
 
 /*------------------------------------------------------------------------------------------------*/
@@ -63,10 +64,7 @@ int countArestas(int size, int *arestas, int (*grafo)[size], int row){
 /*
 Recebe uma aresta na forma de par e adiciona a matriz de adjacencia
 */
-void addAresta( int size, int i, int j, int (*matriz)[size]){
-  matriz[i][j] = 1;
-  matriz[j][i] = 1;
-}
+
 
 /*------------------------------------------------------------------------------------------------*/
 /*
