@@ -5,6 +5,7 @@ int main(){
     
     while(1){
         scanf("%d", &valor);
+        getchar();
         printf(" %d ", valor);
     }
 

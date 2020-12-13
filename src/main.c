@@ -1,7 +1,8 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include "dfs.h"
-
+#define MAX_SIZE 100
+#define MIN_SIZE 2
 /*------------------------------------------------------------------------------------------------*/
 /*
 Busca o vertice mais indicado para dar inicio no caminho
@@ -178,13 +179,15 @@ void fillMatrix( int size, int value, int (*vector)[size]){
 
 int main(){
 
-  // TODO validar se é INT
-  // TODO validar se é maior que 0
   int matrix_size;
   printf("Digite o tamanho da matriz: TxT\n");
   scanf("%d", &matrix_size);
+  
+  if( matrix_size > MAX_SIZE || matrix_size < MIN_SIZE){
+    printf("O tamanho máximo aceitado de linhas/colunas é de %d e o minimo é %d\n", MAX_SIZE, MAX_SIZE, MIN_SIZE);
+    return 0;
+  }
 
-  // TODO permitir inserir a matriz na forma de pares ou item por item
   int grafo[matrix_size][matrix_size];
   fillMatrix(matrix_size, 0, grafo);
   
@@ -200,7 +203,15 @@ int main(){
       // TODO validar se input é 0 ou 1
       for(int i = 0; i < matrix_size; i++){
         for(int j = 0; j < matrix_size; j++ ){
-          scanf("%d", &grafo[i][j]);
+          int temp;
+          scanf("%d", &temp);
+          if(temp != 0 && temp != 1){
+            printf("Valor invalido");
+            j--;
+          }else{
+            grafo[i][j] = temp;
+          }
+
         }
       }
       break;
@@ -210,11 +221,14 @@ int main(){
       // TODO validar se input é 0 ou 1
       printf("Digite quantas arestas o grafo possui!\n");
       scanf("%d", &n_arestas);
+      getchar();
+
       printf("Digite os %d pares, cada par deve ser inserido no formato 'x-y'.\n", n_arestas);
       for(int i = 0; i < n_arestas; i++){
         int x,y;
         scanf("%d-%d", &x, &y);
-        
+        getchar();
+
         if(x >= matrix_size || y >= matrix_size ){
           printf("Valor inválido");
           return 0;
