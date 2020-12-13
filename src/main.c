@@ -11,7 +11,6 @@ busca um vertice com degrau impar, caso nao exista nenhum, retorna um vertice qu
 */
 int buscarInicial(int numVert, int (*grafo)[numVert]){
 
-
   int degraus = 0;
   
   for(int i=0; i < numVert; i++){
@@ -37,30 +36,16 @@ int buscarInicial(int numVert, int (*grafo)[numVert]){
 /*
 Calcula a quantidade de arestas de dado vertice
 */
-int qtdArestas(int numVert, int (*grafo)[numVert]){
-  printf("vertice=%d\n",numVert);
+int qtdArestas(int size, int (*grafo)[size]){
   int arestas=0;
-  for (int i=0;i<numVert;i++){
-    for (int j=i;j<numVert;j++){
+  for (int i=0;i<size;i++){
+    for (int j=i;j<size;j++){
       arestas+=grafo[i][j];
     }
   }
-  printf("aresta=%d\n",arestas);
   return arestas;
 }
 
-/*------------------------------------------------------------------------------------------------*/
-/*
-Realiza a copia de um grafo
-*/
-void copy_graph(int size, int (*copy)[size], int (*orig)[size]){   
-    for( int i = 0; i < size; i++){
-        for(int j = 0; j < size; j++){
-            copy[i][j] = orig[i][j];
-        }
-    }
-}
-/*------------------------------------------------------------------------------------------------*/
 
 /*
 Retorna a quantidade de arestas de um vertice e salva essas vertices em um vetor 
@@ -88,9 +73,8 @@ void addAresta( int size, int i, int j, int (*matriz)[size]){
 /*
 Valida a Aresta do grafo a ser utilizada
 */
-bool isValidNextEdge(int start, int end, int *adjacentes, int n_arestas_vertice,
+bool ehArestaCorte(int start, int end, int *adjacentes, int n_arestas_vertice,
                      int size, int (*grafo)[size]){
-  
   //Contabiliza a quantidade de ligações que o Vertice possui
   int count = 0;
   for (int i = 0; i < n_arestas_vertice; i++){ 
@@ -99,22 +83,20 @@ bool isValidNextEdge(int start, int end, int *adjacentes, int n_arestas_vertice,
     }
   }
 
-  printf("\ncount_aresta: %d", count);
-  print_row(n_arestas_vertice, adjacentes);
+
   //Caso o vertice só possua uma Aresta é realizado uma DFS a fim de reconhecer se ele é uma "Aresta de corte"
   if (count == 1){
     int dfs_c_aresta = dfs(size, grafo, end);
      //*** TODO tentar remover a copia de grafos***//
     //*** copy of graph without aresta         ***//
     int copy[size][size];
-    copy_graph(size, copy, grafo);
+    copiarGrafo(size, copy, grafo);
     
     copy[start][end] = 0;
     copy[end][start] = 0;
 
     int dfs_s_aresta = dfs(size, copy, end);
-    printf("\ndfs c aresta: %d", dfs_c_aresta);
-    printf("\ndfs s aresta: %d", dfs_s_aresta);
+
 	// Ao comparar o resultado retornado pelas DFS's é definido se a aresta será usada.
     return (dfs_c_aresta > dfs_s_aresta) ? false : true;
   }else {
@@ -141,22 +123,16 @@ void fleury(int size, int (*grafo)[size], int start){
     int n_arestas_vertice = 0;
     n_arestas_vertice = countArestas(size, arestas_vertice, grafo, start);
 
-    printf("\n\nstart:%d -> n_vertices: %d", start, n_arestas_vertice);
     // iterando sobre as arestas
-    // arestas_vertice[0] = 3, 5, 7 o nome de uma das vertices
     int i;
     for (i = 0; i < n_arestas_vertice; i++){
        
       v = arestas_vertice[i]; 
-      printf("\ntalvez eu va para : %d", v);
       // If edge u-v is not removed and it's a a valid next edge 
-      if (grafo[start][v] == 1 && isValidNextEdge(start, v, arestas_vertice, n_arestas_vertice, size, grafo)){ 
-      //if (grafo[start][v] == 1){ 
-        printf("\nENTROU NA CONDICIONAL");     
+      if (grafo[start][v] == 1 && ehArestaCorte(start, v, arestas_vertice, n_arestas_vertice, size, grafo)){ 
         
         grafo[start][v] = 0;
         grafo[v][start] = 0; 
-        printf("\nPASSO: %d -> %d",start, v);
         start = v;    
         caminho[vertices_visitados] = start; 
         vertices_visitados++;
@@ -164,36 +140,40 @@ void fleury(int size, int (*grafo)[size], int start){
       }
     } 
     if(i >= n_arestas_vertice){
-        printf("\nEXCECAO apos o FOR %d %d", i, n_arestas_vertice);     
 
         grafo[start][v] = 0;
         grafo[v][start] = 0; 
-        printf("\nPASSO: %d -> %d",start, v);
         start = v;
         caminho[vertices_visitados] = start; 
         vertices_visitados++;
     }
 
-    print_row(n_arestas_vertice, arestas_vertice);
-    
     if(n_arestas_vertice == 0){
       break;
     }
   }
-  printf("n_vertices_visitados %d\n", vertices_visitados);
-  print_graph(size, grafo);
 
-  printf("\nCAMINHO");
-  for( int i = 0 ; i < vertices_visitados; i++){
-    printf("-> %d ", caminho[i]);
+  // ultimo vertice é visitado na ultima iteracao
+  vertices_visitados--;
+  printGrafo(size, grafo);
+
+  if (qtdArestas(size, grafo) == 0){
+    printf("\nCAMINHO ");
+    for( int i = 0 ; i < vertices_visitados; i++){
+      printf("-> %d ", caminho[i]);
+    }
+  }else{
+    printf("\nO grafo não possui trilha euleriana!");
   }
+
+  printf("\n");
 } 
 /*------------------------------------------------------------------------------------------------*/
 
 /*
 Preenche dada matriz com um valor recebido
 */
-void fill_matrix( int size, int value, int (*vector)[size]){
+void fillMatrix( int size, int value, int (*vector)[size]){
   for(int i = 0; i < size; i++){
     for(int j = 0; j < size; j++){
       vector[i][j] = value;
@@ -203,15 +183,15 @@ void fill_matrix( int size, int value, int (*vector)[size]){
 
 int main(){
 
-  // validar se é INT
-  // validar se é maior que 0
+  // TODO validar se é INT
+  // TODO validar se é maior que 0
   int matrix_size;
   printf("Digite o tamanho da matriz: TxT\n");
   scanf("%d", &matrix_size);
 
-  // permitir inserir a matriz na forma de pares ou item por item
+  // TODO permitir inserir a matriz na forma de pares ou item por item
   int grafo[matrix_size][matrix_size];
-  fill_matrix(matrix_size, 0, grafo);
+  fillMatrix(matrix_size, 0, grafo);
   
   int n_arestas;
   char option;
@@ -222,7 +202,7 @@ int main(){
     case 'A':
     case 'a':
       printf("Insira os %d valores da matriz de adjacencia, cada valor inserido deve ser 0 ou 1 e devem ser separados por espaço!\n", (matrix_size * matrix_size));
-      // validar se input é 0 ou 1
+      // TODO validar se input é 0 ou 1
       for(int i = 0; i < matrix_size; i++){
         for(int j = 0; j < matrix_size; j++ ){
           scanf("%d", &grafo[i][j]);
@@ -231,8 +211,8 @@ int main(){
       break;
     case 'B':
     case 'b':
-      // validar se o numero de arestas é int
-      // validar se input é 0 ou 1
+      // TODO validar se o numero de arestas é int
+      // TODO validar se input é 0 ou 1
       printf("Digite quantas arestas o grafo possui!\n");
       scanf("%d", &n_arestas);
       printf("Digite os %d pares, cada par deve ser inserido no formato 'x-y'.\n", n_arestas);
@@ -258,7 +238,6 @@ int main(){
 
   int start = buscarInicial(matrix_size, grafo); 
   
-  printf("\nVERTICE DE PARTIDA: %d\n", start);
 
   fleury(matrix_size, grafo, start);
   
