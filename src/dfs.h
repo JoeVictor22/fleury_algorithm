@@ -15,8 +15,8 @@ int countArestas(int size, int *arestas, int (*grafo)[size], int row);
 
 
 /*--------------------------------------------------------------------------------------------------------*/
-/*Para implementar a DFS de forma iterativa, usamos um vetor de inteiros que ira ser interpretado como    */
-/*uma pilha. O estado vazio de um posicao da pilha é indicado por -1, e as funções para operar sobre      */
+/*Para implementar a DFS de forma iterativa, foi utilizado um vetor de inteiros que é interpretado como   */
+/*uma pilha. O estado vazio de um posição da pilha é indicado por -1, e as funções para operar sobre      */
 /*a pilha estão implementadas a seguir.                                                                   */
 /*--------------------------------------------------------------------------------------------------------*/
 
@@ -67,7 +67,7 @@ int sacar(int *pilha,int size){
 
 /*----------------------------------------------DFS-------------------------------------------------------*/
 /*--------------------------------------------------------------------------------------------------------*/
-/*Implementacao iterativa do DFS modificada para retornar a quantidade de arestas acessiveis dado um      */
+/*Implementação iterativa do DFS modificada para retornar a quantidade de arestas acessiveis dado um      */
 /*vertice inicial                                                                                         */
 /*--------------------------------------------------------------------------------------------------------*/
 int dfs(int size, int (*grafo)[size], int inicial){
@@ -107,7 +107,7 @@ int dfs(int size, int (*grafo)[size], int inicial){
         }
     }
 
-	//Realiza uma contagem de quantos vertices é possivel atingir a partir do inicial
+	// Realiza uma contagem de quantos vertices é possivel atingir a partir do inicial
     int count = 0;
     for(int i = 0; i < size; i++){
         if(visitado[i] == true){
@@ -115,7 +115,7 @@ int dfs(int size, int (*grafo)[size], int inicial){
         }
     }
 
-	//Retornar a contagem para comparações
+	// Retornar a contagem para comparações
     return count;
 }
 /*--------------------------------------------------------------------------------------------------------*/
