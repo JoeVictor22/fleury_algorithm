@@ -1,6 +1,14 @@
 #include <stdbool.h>
 #include <stdio.h>
-#include "grafo.h"
+
+void copiarGrafo(int size, int (*copy)[size], int (*orig)[size]);   
+void copiarGrafoLinha(int size, int *copy, int (*orig)[size], int row);   
+void printGrafo(int size, int (*grafo)[size]);
+void printLinha(int size, int *vector);
+void addAresta( int size, int i, int j, int (*matriz)[size]);
+bool ehArestaCorte(int start, int end, int *adjacentes, int n_arestas_vertice, int size, int (*grafo)[size]);
+int qtdArestas(int size, int (*grafo)[size]);
+int countArestas(int size, int *arestas, int (*grafo)[size], int row);
 
 /*------------------------------------------------------------------------------------------------*/
   

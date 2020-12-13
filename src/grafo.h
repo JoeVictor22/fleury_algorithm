@@ -1,6 +1,6 @@
 #include <stdbool.h>
 #include <stdio.h>
-#include "dfs.h"
+
 
 void copiarGrafo(int size, int (*copy)[size], int (*orig)[size]){   
     for( int i = 0; i < size; i++){

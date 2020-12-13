@@ -1,8 +1,12 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include "dfs.h"
+#include "grafo.h"
+
 #define MAX_SIZE 100
 #define MIN_SIZE 2
+
+
 /*------------------------------------------------------------------------------------------------*/
 /*
 Busca o vertice mais indicado para dar inicio no caminho
