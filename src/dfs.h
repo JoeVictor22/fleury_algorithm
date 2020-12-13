@@ -1,6 +1,8 @@
 #include <stdbool.h>
 #include <stdio.h>
 
+
+/*------------------------------------------------HEADERS-------------------------------------------------*/
 void copiarGrafo(int size, int (*copy)[size], int (*orig)[size]);   
 void copiarGrafoLinha(int size, int *copy, int (*orig)[size], int row);   
 void printGrafo(int size, int (*grafo)[size]);
@@ -9,27 +11,25 @@ void addAresta( int size, int i, int j, int (*matriz)[size]);
 bool ehArestaCorte(int start, int end, int *adjacentes, int n_arestas_vertice, int size, int (*grafo)[size]);
 int qtdArestas(int size, int (*grafo)[size]);
 int countArestas(int size, int *arestas, int (*grafo)[size], int row);
+/*--------------------------------------------------------------------------------------------------------*/
 
-/*------------------------------------------------------------------------------------------------*/
-  
-/*------------------------------------------------------------------------------------------------*/
 
-/*------------------------------------------------------------------------------------------------*/
-/*
-Para implementar a DFS de forma iterativa, usamos um vetor de inteiros que ira ser interpretado como 
-uma pilha. O estado vazio de um posicao da pilha é indicado por -1, e as funcoes para operar sobre
-a pilha estão implementadas a seguir
-*/
-/*                PILHA                */
+/*--------------------------------------------------------------------------------------------------------*/
+/*Para implementar a DFS de forma iterativa, usamos um vetor de inteiros que ira ser interpretado como    */
+/*uma pilha. O estado vazio de um posicao da pilha é indicado por -1, e as funções para operar sobre      */
+/*a pilha estão implementadas a seguir.                                                                   */
+/*--------------------------------------------------------------------------------------------------------*/
+
+
+/*--------------------------------------------PILHA-------------------------------------------------------*/
 void iniciarVetor(int *vector, int size){
     for(int i=0; i < size;i++){
         vector[i] = -1;
     }
 }
 
-//*** TODO mudar o nome das funcoes e variaveis ***//
 // Verifica se a pilha esta preenchida com somente valores -1
-// Caso verdade a pilha se encontra vazia retorna TRUE
+// Caso verdade a pilha se encontra vazia, retorna TRUE.
 bool ehVazio(int *pilha, int size){
     for(int i=0; i < size; i++){
         if(pilha[i] != -1){
@@ -37,9 +37,9 @@ bool ehVazio(int *pilha, int size){
         }    
     }
     return true;
-    
 }
 
+// Insere um valor no topo da pilha
 void empurrar(int *pilha, int size, int value){
     int i;
     for(i = 0; i < size; i++){
@@ -50,6 +50,7 @@ void empurrar(int *pilha, int size, int value){
     pilha[i] = value;
 }
 
+// Saca o valor que se encontra no topo da pilha
 int sacar(int *pilha,int size){
     int i;
     for(i=0; i < size; i++){
@@ -57,54 +58,48 @@ int sacar(int *pilha,int size){
             break;
         }    
     }
-
     int aux = pilha[i-1];
     pilha[i-1] = -1;
-
     return aux;
 }
-/*                END                */
+/*--------------------------------------------------------------------------------------------------------*/
 
-/*
-Funcoes auxiliares usadas para DEBUG do codigo
-*/
 
-/*------------------------------------------------------------------------------------------------*/
-/*
-Implementacao iterativa do DFS modificada para retornar a quantidade de arestas acessiveis dado um 
-vertice inicial
-*/
+/*----------------------------------------------DFS-------------------------------------------------------*/
+/*--------------------------------------------------------------------------------------------------------*/
+/*Implementacao iterativa do DFS modificada para retornar a quantidade de arestas acessiveis dado um      */
+/*vertice inicial                                                                                         */
+/*--------------------------------------------------------------------------------------------------------*/
 int dfs(int size, int (*grafo)[size], int inicial){
-    //Pilha de proximos a entrar na DFS
+    // Pilha de proximos a entrar na DFS
     int pilha[size];
     iniciarVetor(pilha, size);
     
+	// Vetor boolenao armazenando vertices que são possiveis ser acessados
     bool visitado[size];
     for(int i = 0; i < size; i++){
         visitado[i] = false;
     }
 
-	//A primeira vertice na DFS é o inicial passado como argumento
+	// A primeira vertice na DFS é o inicial passado como argumento
     empurrar(pilha, size, inicial);
     visitado[inicial] = true;
 	
-	//Realiza verificações até a pilha estar vazia
+	// Realiza verificações até a pilha estar vazia
     while(!ehVazio(pilha, size)){ 
         
+		// Vertice é a vertice onde ira ser feito a DFS
         int vertice;
-		//Vertice é a vertice onde ira ser feito a DFS
         vertice = sacar(pilha, size);
 				
-        //Recebe um vetor que é a linha do Vertice a ser feita a DFS
+        // Recebe um vetor que é a linha da Matriz correspondente ao Vertice a ser feita a DFS
         int vetorVizinhos[size];
         copiarGrafoLinha(size, vetorVizinhos, grafo, vertice);
-
-        //printLinha(size, vetorVizinhos);
         
-		// "i" itera sobre o vetor de Vertices e marca os vizinhos ao Vertice utilizado
+		// "i" itera sobre o vetor e marca os vizinhos ao Vertice utilizado
         for(int i=0; i < size; i++){
-			//Caso o vertice seja vizinho, (==1), e ainda não tenha sido marcado como visitado
-			//O vizinho será colocado na pilha para verificar os seus proprios vizinhos e marcado como visitado
+			// Caso o vertice seja vizinho, (==1), e ainda não tenha sido marcado como visitado
+			// O vizinho será colocado na pilha para verificar os seus proprios vizinhos e marcado como visitado
             if(vetorVizinhos[i] == 1 && !visitado[i]){
                 empurrar(pilha, size, i);
                 visitado[i] = true;
@@ -123,4 +118,4 @@ int dfs(int size, int (*grafo)[size], int inicial){
 	//Retornar a contagem para comparações
     return count;
 }
-
+/*--------------------------------------------------------------------------------------------------------*/
