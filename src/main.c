@@ -28,14 +28,7 @@ int buscarInicial(int numVert, int (*grafo)[numVert]){
   //*** a gente pode retornar um random para a trilha iniciar de qualquer um dos valores***//
   
   return 0;
-
-}   
-
-
-
-
-
-
+}
 /*------------------------------------------------------------------------------------------------*/
 /*
 Busca um caminho ou ciclo euleriano no grafo e avalia algumas caracteristicas do grafo
