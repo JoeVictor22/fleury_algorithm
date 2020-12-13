@@ -103,13 +103,12 @@ void fleury(int size, int (*grafo)[size], int start){
 	// Caso de saida uma Vertice que não possui Arestas
     if(n_arestas_vertice == 0){
 	  // Remove pois visita a si mesmo garantindo ser o ultimo ponto
-	  vertices_visitados--; // ANTERIORMENTE ESTAVA FORA
+	  vertices_visitados--; 
       break;
     }
   }
 
   // Printa o Grafo após percorer todos os caminhos validos
-  //vertices_visitados--; // ANTERIORMENTE ESTAVA AQUI!
   printGrafo(size, grafo);
 
   // Um Grafo contem um caminho Euleriano se somente se ele percore todas as arestas contidas nele.
@@ -171,8 +170,6 @@ int main(){
       break;
     case 'B':
     case 'b':
-      // TODO validar se o numero de arestas é int
-      // TODO validar se input é 0 ou 1
 	  // Recebe a quantidade de arestas no grafo
       printf("Digite quantas arestas o grafo possui!\n");
       scanf("%d", &n_arestas);
