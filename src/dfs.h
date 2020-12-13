@@ -1,4 +1,3 @@
-
 #include <stdbool.h>
 #include <stdio.h>
 /*------------------------------------------------------------------------------------------------*/
@@ -31,23 +30,6 @@ bool ehVazio(int *pilha, int size){
     
 }
 
-int frente(int *pilha){
-    return pilha[0];
-}
-
-void remover(int *pilha, int size, int remover){
-    pilha[remover] = -1;
-    int i;
-    for(i = 0; i < size; i++){
-        if(pilha[i] == -1){
-            break;
-        }
-    }
-    for(i; i < size; i++){
-        pilha[i] = pilha[i+1];   
-    }
-    pilha[size-1] = -1;
-}
 void empurrar(int *pilha, int size, int value){
     int i;
     for(i = 0; i < size; i++){
