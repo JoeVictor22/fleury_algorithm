@@ -18,8 +18,9 @@ void start_vector(int *vector, int size){
     }
 }
 
-// TODO mudar o nome das funcoes e variaveis
-// o indicador se a posicao esta vazia é -1
+//*** TODO mudar o nome das funcoes e variaveis ***//
+// Verifica se a pilha esta preenchida com somente valores -1
+// Caso verdade a pilha se encontra vazia retorna TRUE
 bool empty(int *pilha, int size){
     for(int i=0; i < size; i++){
         if(pilha[i] != -1){
@@ -29,6 +30,7 @@ bool empty(int *pilha, int size){
     return true;
     
 }
+
 int begin(int *pilha){
     return pilha[0];
 }
@@ -112,22 +114,30 @@ int dfs(int size, int (*grafo)[size], int inicial){
         visitado[i] = false;
     }
 
-    push_back(pilha, size, inicial);      //Primeiro a entrar na DFS é o inicial passado como argumento WHATEVER!
-
-    visitado[inicial] = true;  //CLARO Q ELE EH TRUE DUH!
-
-    while(!empty(pilha, size)){ //RECURSAUM SO QUE NAO!
+	//A primeira vertice na DFS é o inicial passado como argumento
+    push_back(pilha, size, inicial);
+    visitado[inicial] = true;
+	
+	//Realiza verificações até a pilha estar vazia
+    while(!empty(pilha, size)){ 
         //print_graph(size, grafo);
-        int aresta;
-        aresta = pop(pilha, size); //aresta é o no onde ira ser feito a DFS
+		
+        int vertice;
+		//Vertice é a vertice onde ira ser feito a DFS
+        vertice = pop(pilha, size);
+		
         //printf("\naresta: %d, ", aresta);
-        //recebe um vetor que eh a linha do nó a ser feita a DFS
+		
+        //Recebe um vetor que é a linha do Vertice a ser feita a DFS
         int vetorVizinhos[size];
-        copy_graph_row(size, vetorVizinhos, grafo, aresta);
+        copy_graph_row(size, vetorVizinhos, grafo, vertice);
 
         //print_row(size, vetorVizinhos);
         
-        for(int i=0; i < size; i++){// "i" itera sobre o vetor e marca aonde é possivel chegar
+		// "i" itera sobre o vetor de Vertices e marca os vizinhos ao Vertice utilizado
+        for(int i=0; i < size; i++){
+			//Caso o vertice seja vizinho, (==1), e ainda não tenha sido marcado como visitado
+			//O vizinho será colocado na pilha para verificar os seus proprios vizinhos e marcado como visitado
             if(vetorVizinhos[i] == 1 && !visitado[i]){
                 push_back(pilha, size, i);
                 visitado[i] = true;
@@ -137,6 +147,7 @@ int dfs(int size, int (*grafo)[size], int inicial){
         //scanf("%c", &wait);
     }
 
+	//Realiza uma contagem de quantos vertices é possivel atingir a partir do inicial
     int count = 0;
     //printf("\ngrafos visitados a partir de %d\n", inicial);
     for(int i = 0; i < size; i++){
@@ -148,7 +159,8 @@ int dfs(int size, int (*grafo)[size], int inicial){
     //printf("\n\n");
     //char wait;
     //scanf("%c", &wait);
-
+	
+	//Retornar a contagem para comparações
     return count;
 }
 

@@ -22,15 +22,14 @@ int buscarInicial(int numVert, int (*grafo)[numVert]){
       }
     }
     if((degraus % 2 ) == 1 ){
-      /* MAYBE
-      a gente podia guardar o vertice com o maior numero de arestas para dar ser nosso vertice inicial, e nao pegar o primeiro impar encontrado
-      */
+      //*** MAYBE ***//
+      //*** a gente podia guardar o vertice com o maior numero de arestas para dar ser nosso vertice inicial, e nao pegar o primeiro impar encontrado ***//
       return i;
     }
   }
-  /* MAYBE
-  a gente pode retornar um random para a trilha iniciar de qualquer um dos valores 
-  */
+  //*** MAYBE ***//
+  //*** a gente pode retornar um random para a trilha iniciar de qualquer um dos valores***//
+  
   return 0;
 
 }   
@@ -49,6 +48,7 @@ int qtdArestas(int numVert, int (*grafo)[numVert]){
   printf("aresta=%d\n",arestas);
   return arestas;
 }
+
 /*------------------------------------------------------------------------------------------------*/
 /*
 Realiza a copia de um grafo
@@ -86,11 +86,12 @@ void addAresta( int size, int i, int j, int (*matriz)[size]){
 
 /*------------------------------------------------------------------------------------------------*/
 /*
-TODO, raynan explica melhor isso aq
+Valida a Aresta do grafo a ser utilizada
 */
 bool isValidNextEdge(int start, int end, int *adjacentes, int n_arestas_vertice,
                      int size, int (*grafo)[size]){
   
+  //Contabiliza a quantidade de ligações que o Vertice possui
   int count = 0;
   for (int i = 0; i < n_arestas_vertice; i++){ 
     if(grafo[start][i] == 1){
@@ -100,12 +101,11 @@ bool isValidNextEdge(int start, int end, int *adjacentes, int n_arestas_vertice,
 
   printf("\ncount_aresta: %d", count);
   print_row(n_arestas_vertice, adjacentes);
+  //Caso o vertice só possua uma Aresta é realizado uma DFS a fim de reconhecer se ele é uma "Aresta de corte"
   if (count == 1){
     int dfs_c_aresta = dfs(size, grafo, end);
-  
-
-    // TODO tentar remover a copia de grafos
-    // copy of graph without aresta
+     //*** TODO tentar remover a copia de grafos***//
+    //*** copy of graph without aresta         ***//
     int copy[size][size];
     copy_graph(size, copy, grafo);
     
@@ -115,9 +115,8 @@ bool isValidNextEdge(int start, int end, int *adjacentes, int n_arestas_vertice,
     int dfs_s_aresta = dfs(size, copy, end);
     printf("\ndfs c aresta: %d", dfs_c_aresta);
     printf("\ndfs s aresta: %d", dfs_s_aresta);
-
+	// Ao comparar o resultado retornado pelas DFS's é definido se a aresta será usada.
     return (dfs_c_aresta > dfs_s_aresta) ? false : true;
-
   }else {
     return true;
   }
