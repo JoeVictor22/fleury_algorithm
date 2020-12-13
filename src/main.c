@@ -134,18 +134,17 @@ int main(){
     case 'A':
     case 'a':
       printf("Insira os %d valores da matriz de adjacencia, cada valor inserido deve ser 0 ou 1 e devem ser separados por espaço!\n", (matrix_size * matrix_size));
-      // TODO validar se input é 0 ou 1
       for(int i = 0; i < matrix_size; i++){
         for(int j = 0; j < matrix_size; j++ ){
           int temp;
           scanf("%d", &temp);
           if(temp != 0 && temp != 1){
-            printf("Valor invalido");
+            printf("Valor invalido, insira 1 ou 0!\n");
+            getchar();
             j--;
           }else{
             grafo[i][j] = temp;
           }
-
         }
       }
       break;
@@ -156,19 +155,26 @@ int main(){
       printf("Digite quantas arestas o grafo possui!\n");
       scanf("%d", &n_arestas);
       getchar();
+      
+      if(n_arestas <= 0){
+        printf("O número de arestas digitado é invalido!\n");
+        return 0;
+      }
 
       printf("Digite os %d pares, cada par deve ser inserido no formato 'x-y'.\n", n_arestas);
       for(int i = 0; i < n_arestas; i++){
         int x,y;
         scanf("%d-%d", &x, &y);
-        getchar();
 
-        if(x >= matrix_size || y >= matrix_size ){
-          printf("Valor inválido");
-          return 0;
+        printf("\nPAR: %d -> %d\n", x, y);
+        if(x < 0 || y < 0 || x >= matrix_size || y >= matrix_size ){
+          printf("\nValor inválido, digite valores de 0 ate %d\n", matrix_size-1);
+          getchar();
+          i--;
+        }else{
+          addAresta(matrix_size, x, y, grafo);
+
         }
-
-        addAresta(matrix_size, x, y, grafo);
       }
       break;
     default:
