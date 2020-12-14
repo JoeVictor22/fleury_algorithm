@@ -16,9 +16,12 @@
 /*--------------------------------------------------------------------------------*/
 /*Primeira entrada: Quantidade de Vertices do grafo.                              */
 /*Segunda entrada: A para escolher inserir uma matriz de adjacencia ou B para     */
+/*Segunda entrada: Existem tambem duas opcoes, C e D, para casos de teste         */
 /*pares de arestas.                                                               */
 /*Terceira entrada: Caso A, matriz de adjacencia com N*N elementos.               */
 /*Terceira entrada: Caso B, número de Arestas e pares de Arestas no formato 'x-y'.*/
+/*Terceira entrada: Caso C, essa opção ira gerar uma matriz do tamanho informado .*/
+/*Terceira entrada: Caso D, essa opção ira realizar uma serie de testes          .*/
 /*--------------------------------------------------------------------------------*/
 
 
@@ -82,7 +85,7 @@ void fleury(int size, int (*grafo)[size], int start){
     // V recebe a Aresta 
 	  v = arestas_vertice[i];
 	  
-     // Verfica se a posição no Grafo é valida e se a Aresta não é de corte
+      // Verfica se a posição no Grafo é valida e se a Aresta não é de corte
       if (grafo[start][v] == 1 && ehArestaCorte(start, v, arestas_vertice, n_arestas_vertice, size, grafo)){
 	    	// Caso a Aresta seja validada ela é removida do Grafo
         grafo[start][v] = 0;
