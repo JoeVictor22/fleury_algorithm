@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <stdbool.h>
+#include <stdlib.h>
+
 #include "dfs.h"
 #include "grafo.h"
 
@@ -170,7 +172,7 @@ int main(){
   // Valida se o valor recebido esta dentro dos limites
   if( matrix_size > MAX_SIZE || matrix_size < MIN_SIZE){
     printf("O tamanho máximo aceitado de linhas/colunas é de %d e o minimo é %d\n", MAX_SIZE, MAX_SIZE, MIN_SIZE);
-    return 0;
+    exit(0);
   }
 
   // Cria o grafo e o preenche com 0
@@ -214,7 +216,7 @@ int main(){
 	    // Valida a entrada do usuario, o grafo deve possuir no minimo 1 Aresta
       if(n_arestas <= 0){
         printf("O número de arestas digitado é invalido!\n");
-        return 0;
+        exit(0);
       }
 
 	    // Recebe os pares de arestas no formato x-y
@@ -234,19 +236,21 @@ int main(){
         }
       }
       break;
+    // Cria uma matriz com arestas conectadas a todos os vertices, se o tamanho for impar sera gerado um grafo euleriano
     case 'C':
     case 'c':
       create(matrix_size, grafo);
       break;
+    // Realiza um teste sobre todos os grafos possiveis ate o tamanho max permitido pelo algoritimo, gerando grafos com a mesma estrategia do caso 'C'
     case 'D':
     case 'd':
       teste();
-      return 0;
+      exit(0);
       break;
   	// Valida o caso de entrada
     default:
       printf("Opção inválida\n");
-      return 0;
+      exit(0);
       break;
   }
 
