@@ -1,6 +1,5 @@
 #include <stdbool.h>
 #include <stdio.h>
-#define STACK_SIZE 3000
 
 /*------------------------------------------------HEADERS-------------------------------------------------*/
 // Import explicito de funcoes do grafo.h para evitar erros 
@@ -12,6 +11,7 @@ void addAresta( int size, int i, int j, int (*matriz)[size]);
 bool ehArestaCorte(int start, int end, int *adjacentes, int n_arestas_vertice, int size, int (*grafo)[size]);
 int qtdArestas(int size, int (*grafo)[size]);
 int countArestas(int size, int *arestas, int (*grafo)[size], int row);
+void fillMatrix( int size, int value, int (*vector)[size]);
 /*--------------------------------------------------------------------------------------------------------*/
 
 

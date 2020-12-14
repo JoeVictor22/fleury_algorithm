@@ -91,6 +91,16 @@ int countArestas(int size, int *arestas, int (*grafo)[size], int row){
 }
 /*--------------------------------------------------------------------------------------------------------*/
 
+//Preenche dada matriz com um valor recebido
+void fillMatrix( int size, int value, int (*vector)[size]){
+  for(int i = 0; i < size; i++){
+    for(int j = 0; j < size; j++){
+      vector[i][j] = value;
+    }
+  }
+}
+/*--------------------------------------------------------------------------------*/
+
 // Valida a Aresta do grafo a ser utilizada
 bool ehArestaCorte(int start, int end, int *adjacentes, int n_arestas_vertice,
                    int size, int (*grafo)[size]){

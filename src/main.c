@@ -10,7 +10,7 @@
 // min size para o numero de vertices
 #define MIN_SIZE 2
 // max size para o caminho percorrido no pior caso possivel: (45 * 44)/2
-#define MAX_CAMINHO 1000
+#define MAX_CAMINHO 2000
 // no pior caso, o algoritmo deve usar cerca de 3000 inteiros
 
 /*--------------------------------------------------------------------------------*/
@@ -43,16 +43,6 @@ int buscarInicial(int numVert, int (*grafo)[numVert]){
     }
   } 
   return 0;
-}
-/*--------------------------------------------------------------------------------*/
-
-//Preenche dada matriz com um valor recebido
-void fillMatrix( int size, int value, int (*vector)[size]){
-  for(int i = 0; i < size; i++){
-    for(int j = 0; j < size; j++){
-      vector[i][j] = value;
-    }
-  }
 }
 /*--------------------------------------------------------------------------------*/
 
