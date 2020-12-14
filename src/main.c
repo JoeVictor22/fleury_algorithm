@@ -173,7 +173,7 @@ int main(){
   int n_arestas;
   char option;
   getchar();
-  printf("Digite 'A' para inserir uma matriz de adjacencia ou digite 'B' para inserir as arestas do grafo, digite 'C' para criar uma matriz automaticamente ou 'D' para realizar casos de teste.\n");
+  printf("Digite 'A' para inserir uma matriz de adjacencia\nDigite 'B' para inserir as arestas do grafo\nDigite 'C' para criar uma matriz automaticamente\nDigite 'D' para realizar casos de teste\n");
   scanf("%c", &option );
   switch(option){
     case 'A':
