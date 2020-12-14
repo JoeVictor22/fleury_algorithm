@@ -1,5 +1,5 @@
 # fleury_algorithm
-implementação do algoritmo de Fleury para a geração de caminho/ciclo euleriano em um grafo de adjacencia utilizando DFS(depth-first search).
+Implementação do algoritmo de Fleury para a geração de caminho/ciclo euleriano em um grafo de adjacencia utilizando DFS(depth-first search).
 ## Como executar
 O algoritmo precisa dos arquivos src/main.c, src/grafo.h, src/dfs.h.
 Para ser executado, basta compilar o src/main.c e executa-lo.
