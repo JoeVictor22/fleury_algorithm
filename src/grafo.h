@@ -2,9 +2,9 @@
 #include <stdio.h>
 
 
-/*-----------------------------------------------------------------------------------*/
-/*Utilitarios para ser utilizado no Grafo necessario para a aplicação                */
-/*-----------------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------------------------------------*/
+/*         Utilitarios para ser utilizado no Grafo necessario para a aplicação                            */
+/*--------------------------------------------------------------------------------------------------------*/
 
 // Cria uma copia do grafo
 void copiarGrafo(int size, int (*copy)[size], int (*orig)[size]){   
@@ -14,6 +14,7 @@ void copiarGrafo(int size, int (*copy)[size], int (*orig)[size]){
         }
     }
 }
+/*--------------------------------------------------------------------------------------------------------*/
 
 // Copia somente uma linha do Grafo para um vetor
 void copiarGrafoLinha(int size, int *copy, int (*orig)[size], int row){   
@@ -21,6 +22,7 @@ void copiarGrafoLinha(int size, int *copy, int (*orig)[size], int row){
         copy[j] = orig[row][j];
     }
 }
+/*--------------------------------------------------------------------------------------------------------*/
 
 // Printa o Grafo em sua integridade
 void printGrafo(int size, int (*grafo)[size]){
@@ -32,7 +34,21 @@ void printGrafo(int size, int (*grafo)[size]){
         printf("\n");
     }
 }
+/*--------------------------------------------------------------------------------------------------------*/
 
+/*
+Utilitario para gerar uma matriz, caso o tamanho seja impar ela sera euleriana
+*/
+void create(int size, int (*matriz)[size]){
+  for(int i =0 ; i < size; i++){
+    for( int j=0; j < size; j++){
+      if (j != i){
+        matriz[i][j] = 1;
+      }
+    }
+  }
+}
+/*--------------------------------------------------------------------------------------------------------*/
 // Printa somente uma linha do Grafo
 void printLinha(int size, int *vector){
     printf("\nLINHA:\n");
@@ -41,12 +57,14 @@ void printLinha(int size, int *vector){
     }
     printf("\n");
 }
+/*--------------------------------------------------------------------------------------------------------*/
 
 // Recebe uma aresta na forma de par e adiciona a matriz de adjacencia
 void addAresta( int size, int i, int j, int (*matriz)[size]){
   matriz[i][j] = 1;
   matriz[j][i] = 1;
 }
+/*--------------------------------------------------------------------------------------------------------*/
 
 // Calcula a quantidade de arestas presentes no grafo
 int qtdArestas(int size, int (*grafo)[size]){
@@ -58,6 +76,7 @@ int qtdArestas(int size, int (*grafo)[size]){
   }
   return arestas;
 }
+/*--------------------------------------------------------------------------------------------------------*/
 
 // Retorna a quantidade de arestas de um vertice e salva essas vertices em um vetor 
 int countArestas(int size, int *arestas, int (*grafo)[size], int row){
@@ -70,6 +89,7 @@ int countArestas(int size, int *arestas, int (*grafo)[size], int row){
     }
     return count;
 }
+/*--------------------------------------------------------------------------------------------------------*/
 
 // Valida a Aresta do grafo a ser utilizada
 bool ehArestaCorte(int start, int end, int *adjacentes, int n_arestas_vertice,
@@ -82,7 +102,7 @@ bool ehArestaCorte(int start, int end, int *adjacentes, int n_arestas_vertice,
     }
   }
   
-  // Caso o Bertice só possua uma Aresta é realizado uma DFS a fim de reconhecer se ele é uma "Aresta de corte"
+  // Caso o Vertice só possua uma Aresta é realizado uma DFS a fim de reconhecer se ele é uma "Aresta de corte"
   if (count == 1){
   	// Salva a quantidade de Vertices acessiveis com a Aresta presente no grafo
     int dfs_c_aresta = dfs(size, grafo, end);
