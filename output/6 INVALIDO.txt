@@ -1,0 +1,9 @@
+GRAFO:
+0 0 0 0 1 1 
+0 0 0 0 0 0 
+0 0 0 0 1 0 
+0 0 0 0 0 0 
+1 0 1 0 0 0 
+1 0 0 0 0 0 
+
+O grafo não possui trilha euleriana!
