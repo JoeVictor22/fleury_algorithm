@@ -1,6 +1,6 @@
 #include <stdbool.h>
 #include <stdio.h>
-
+#define STACK_SIZE 3000
 
 /*------------------------------------------------HEADERS-------------------------------------------------*/
 // Import explicito de funcoes do grafo.h para evitar erros 

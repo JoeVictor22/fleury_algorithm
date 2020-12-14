@@ -3,9 +3,13 @@
 #include "dfs.h"
 #include "grafo.h"
 
+// max size para o numero de vertices
 #define MAX_SIZE 45
+// min size para o numero de vertices
 #define MIN_SIZE 2
-
+// max size para o caminho percorrido no pior caso possivel: (45 * 44)/2
+#define MAX_CAMINHO 1000
+// no pior caso, o algoritmo deve usar cerca de 3000 inteiros
 
 /*--------------------------------------------------------------------------------*/
 /*Realiza diversas validações e recebe a entrada do usuario                       */
@@ -35,6 +39,7 @@ int buscarInicial(int numVert, int (*grafo)[numVert]){
   } 
   return 0;
 }
+/*--------------------------------------------------------------------------------*/
 
 //Preenche dada matriz com um valor recebido
 void fillMatrix( int size, int value, int (*vector)[size]){
@@ -44,6 +49,7 @@ void fillMatrix( int size, int value, int (*vector)[size]){
     }
   }
 }
+/*--------------------------------------------------------------------------------*/
 
 // Busca um caminho ou ciclo euleriano no grafo assim como avalia algumas caracteristicas do grafo
 void fleury(int size, int (*grafo)[size], int start){
@@ -51,8 +57,14 @@ void fleury(int size, int (*grafo)[size], int start){
   int vertices_visitados = 0;
   int v = start;
   
+  // Calcula o tamanho maximo do caminho que pode ser percorrido
+  int max_caminho_size = ((size * (size-1))/2);
+  if(max_caminho_size > MAX_CAMINHO){
+    max_caminho_size = MAX_CAMINHO;
+  }
+
   // Caminho feito no grafo a ser impresso
-  int caminho[100];
+  int caminho[max_caminho_size];
   caminho[vertices_visitados] = start; 
   vertices_visitados++;
   
@@ -78,7 +90,7 @@ void fleury(int size, int (*grafo)[size], int start){
 		
 	    	// O ponto final da Aresta é se torna o ponto inicial para as proximas verificações
         start = v;  
-		
+
 	    	// Guarda o Vertice para printar caminho
         caminho[vertices_visitados] = start; 
         vertices_visitados++;
@@ -102,8 +114,8 @@ void fleury(int size, int (*grafo)[size], int start){
 
   	// Caso de saida uma Vertice que não possui Arestas
     if(n_arestas_vertice == 0){
-	  // Remove pois visita a si mesmo garantindo ser o ultimo ponto
-	  vertices_visitados--; 
+	    // Remove pois visita a si mesmo garantindo ser o ultimo ponto
+	    vertices_visitados--; 
       break;
     }
   }
@@ -124,6 +136,27 @@ void fleury(int size, int (*grafo)[size], int start){
   printf("\n");
 } 
 
+
+/*--------------------------------------------------------------------------------------------------------*/
+
+// Função para teste exaustivo da aplicação
+void teste(){
+  printf("\n\nTESTES\n");
+  int grafo[MAX_SIZE][MAX_SIZE];
+ 
+  int i;
+  for( i = MIN_SIZE; i <= MAX_SIZE; i++){
+    printf("\n\nSIZE: %d", i);
+    fillMatrix(i, 0, grafo);
+
+    create(i, grafo);
+    // Busca um vertice para iniciar a verificação do grafo
+    int start = buscarInicial(i, grafo); 
+
+    // Trabalha para encontrar um caminho Euleriano no grafo
+    fleury(i, grafo, start);
+  } 
+}
 /*--------------------------------------------MAIN-----------------------------------------------------*/
 int main(){
   // Recebe o tamanho da Matriz que sera trabalhada
@@ -145,7 +178,7 @@ int main(){
   int n_arestas;
   char option;
   getchar();
-  printf("Digite 'A' para inserir uma matriz de adjacencia ou digite 'B' para inserir as arestas do grafo.\n");
+  printf("Digite 'A' para inserir uma matriz de adjacencia ou digite 'B' para inserir as arestas do grafo, digite 'C' para criar uma matriz automaticamente ou 'D' para realizar casos de teste.\n");
   scanf("%c", &option );
   switch(option){
     case 'A':
@@ -198,6 +231,15 @@ int main(){
         }
       }
       break;
+    case 'C':
+    case 'c':
+      create(matrix_size, grafo);
+      break;
+    case 'D':
+    case 'd':
+      teste();
+      return 0;
+      break;
   	// Valida o caso de entrada
     default:
       printf("Opção inválida\n");
@@ -219,6 +261,10 @@ int main(){
 
   // Trabalha para encontrar um caminho Euleriano no grafo
   fleury(matrix_size, grafo, start);
+
   return 0;
 }
+
+
+
 /*-----------------------------------------------------------------------------------------------------*/
