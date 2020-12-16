@@ -5,16 +5,49 @@
 #include "dfs.h"
 #include "grafo.h"
 
+
+/*
+Implementação Iterativa do algoritimo de Fleury com busca em profundidade
+
+Copyright © 2020 by Joel Victor Castro Galvão, Raynan Serafim de Souza
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell 
+copies of the Software, and to permit persons to whom the Software is 
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all 
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A 
+PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
+
 // max size para o numero de vertices
-#define MAX_SIZE 45
+#define MAX_SIZE 37
 // min size para o numero de vertices
 #define MIN_SIZE 2
-// max size para o caminho percorrido no pior caso possivel: (45 * 44)/2
-#define MAX_CAMINHO 2000
-// no pior caso, o algoritmo deve usar cerca de 3000 inteiros
+// max size para o caminho percorrido no pior caso possivel: (37 * 36)/2
+#define MAX_CAMINHO 700
+// no pior caso, o algoritmo deve usar cerca de 2069 inteiros
 
 /*--------------------------------------------------------------------------------*/
-/*Realiza diversas validações e recebe a entrada do usuario                       */
+/*A main do programa realiza diversas validações da entrada do usuario, em seguida*/
+/*mostra diversas opções para a geração de uma trilha euleriana                   */
+/*As trilhas geradas podem não ser eficientes, o algoritmo apenas busca obter uma */
+/*trilha euleriana sem se preocupar com otimização do caminho                     */
+/*Uma maneira de validar sua saída, é checar se a matriz de adjacencia se encontra*/
+/*totalmente vazia após a execução do algoritmo, isso indica que todos os vertices*/
+/*foram percorridos e destruidos adequadamentes                                   */
+/*Apos o usuario digitar sua entrada, a matriz gerada é printada, e apos o fim do */
+/*programa, a matriz com as arestas percorridas é printada, assim como o caminho  */
+/*ou uma resposta indicando que não foi possivel encontrar uma trilha euleriana   */
 /*--------------------------------------------------------------------------------*/
 /*Primeira entrada: Quantidade de Vertices do grafo.                              */
 /*Segunda entrada: A para escolher inserir uma matriz de adjacencia ou B para     */
@@ -161,7 +194,7 @@ int main(){
   
   // Valida se o valor recebido esta dentro dos limites
   if( matrix_size > MAX_SIZE || matrix_size < MIN_SIZE){
-    printf("O tamanho máximo aceitado de linhas/colunas é de %d e o minimo é %d\n", MAX_SIZE, MAX_SIZE, MIN_SIZE);
+    printf("O tamanho máximo aceitado de linhas/colunas é de %d e o minimo é %d\n", MAX_SIZE, MIN_SIZE);
     exit(0);
   }
 
