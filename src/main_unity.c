@@ -10,27 +10,28 @@
 #define MAX_CAMINHO 700
 // no pior caso, o algoritmo deve usar cerca de 2069 inteiros
 
-// matriz utilizada para a computação dos dados
+// matriz utilizada para a computa��o dos dados
 int grafo_matriz[MAX_SIZE][MAX_SIZE];
+int grafo_matriz_copy[MAX_SIZE][MAX_SIZE];
 int caminho[MAX_CAMINHO];
 
 /*
-Implementação Iterativa do algoritimo de Fleury com busca em profundidade
+Implementa��o Iterativa do algoritimo de Fleury com busca em profundidade
 
-Copyright © 2020 by Joel Victor Castro Galvão, Raynan Serafim de Souza
+Copyright � 2020 by Joel Victor Castro Galv�o, Raynan Serafim de Souza
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell 
-copies of the Software, and to permit persons to whom the Software is 
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
 
-The above copyright notice and this permission notice shall be included in all 
+The above copyright notice and this permission notice shall be included in all
 copies or substantial portions of the Software.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
-INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A 
+INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
 PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
 HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
@@ -39,25 +40,25 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
 /*--------------------------------------------------------------------------------*/
-/*A main do programa realiza diversas validações da entrada do usuario, em seguida*/
-/*mostra diversas opções para a geração de uma trilha euleriana                   */
-/*As trilhas geradas podem não ser eficientes, o algoritmo apenas busca obter uma */
-/*trilha euleriana sem se preocupar com otimização do caminho                     */
-/*Uma maneira de validar sua saída, é checar se a matriz de adjacencia se encontra*/
-/*totalmente vazia após a execução do algoritmo, isso indica que todos os vertices*/
+/*A main do programa realiza diversas valida��es da entrada do usuario, em seguida*/
+/*mostra diversas op��es para a gera��o de uma trilha euleriana                   */
+/*As trilhas geradas podem n�o ser eficientes, o algoritmo apenas busca obter uma */
+/*trilha euleriana sem se preocupar com otimiza��o do caminho                     */
+/*Uma maneira de validar sua sa�da, � checar se a matriz de adjacencia se encontra*/
+/*totalmente vazia ap�s a execu��o do algoritmo, isso indica que todos os vertices*/
 /*foram percorridos e destruidos adequadamentes                                   */
-/*Apos o usuario digitar sua entrada, a matriz gerada é printada, e apos o fim do */
-/*programa, a matriz com as arestas percorridas é printada, assim como o caminho  */
-/*ou uma resposta indicando que não foi possivel encontrar uma trilha euleriana   */
+/*Apos o usuario digitar sua entrada, a matriz gerada � printada, e apos o fim do */
+/*programa, a matriz com as arestas percorridas � printada, assim como o caminho  */
+/*ou uma resposta indicando que n�o foi possivel encontrar uma trilha euleriana   */
 /*--------------------------------------------------------------------------------*/
 /*Primeira entrada: Quantidade de Vertices do grafo.                              */
 /*Segunda entrada: A para escolher inserir uma matriz de adjacencia ou B para     */
 /*Segunda entrada: Existem tambem duas opcoes, C e D, para casos de teste         */
 /*pares de arestas.                                                               */
 /*Terceira entrada: Caso A, matriz de adjacencia com N*N elementos.               */
-/*Terceira entrada: Caso B, número de Arestas e pares de Arestas no formato 'x-y'.*/
-/*Terceira entrada: Caso C, essa opção ira gerar uma matriz do tamanho informado .*/
-/*Terceira entrada: Caso D, essa opção ira realizar uma serie de testes          .*/
+/*Terceira entrada: Caso B, n�mero de Arestas e pares de Arestas no formato 'x-y'.*/
+/*Terceira entrada: Caso C, essa op��o ira gerar uma matriz do tamanho informado .*/
+/*Terceira entrada: Caso D, essa op��o ira realizar uma serie de testes          .*/
 /*--------------------------------------------------------------------------------*/
 
 
@@ -70,7 +71,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
 
-void copiarGrafoLinha(int size, int *copy, int row);   
+void copiarGrafoLinha(int size, int *copy, int row);
 void printGrafo(int size);
 void printLinha(int size, int *vector);
 void addAresta( int size, int i, int j);
@@ -95,7 +96,7 @@ bool ehVazio(int *pilha, int size){
     for(int i=0; i < size; i++){
         if(pilha[i] != -1){
             return false;
-        }    
+        }
     }
     return true;
 }
@@ -117,7 +118,7 @@ int sacar(int *pilha,int size){
     for(i=0; i < size; i++){
         if(pilha[i] == -1){
             break;
-        }    
+        }
     }
     int aux = pilha[i-1];
     pilha[i-1] = -1;
@@ -128,39 +129,39 @@ int sacar(int *pilha,int size){
 
 /*----------------------------------------------DFS-------------------------------------------------------*/
 /*--------------------------------------------------------------------------------------------------------*/
-/*Implementação iterativa do DFS modificada para retornar a quantidade de arestas acessiveis dado um      */
+/*Implementa��o iterativa do DFS modificada para retornar a quantidade de arestas acessiveis dado um      */
 /*vertice inicial                                                                                         */
 /*--------------------------------------------------------------------------------------------------------*/
 int dfs(int size, int inicial){
     // Pilha de proximos a entrar na DFS
     int pilha[size];
     iniciarVetor(pilha, size);
-    
-	// Vetor boolenao armazenando vertices que são possiveis ser acessados
+
+	// Vetor boolenao armazenando vertices que s�o possiveis ser acessados
     bool visitado[size];
     for(int i = 0; i < size; i++){
         visitado[i] = false;
     }
 
-	// A primeira vertice na DFS é o inicial passado como argumento
+	// A primeira vertice na DFS � o inicial passado como argumento
     empurrar(pilha, size, inicial);
     visitado[inicial] = true;
-	
-	// Realiza verificações até a pilha estar vazia
-    while(!ehVazio(pilha, size)){ 
-        
-		// Vertice é a vertice onde ira ser feito a DFS
+
+	// Realiza verifica��es at� a pilha estar vazia
+    while(!ehVazio(pilha, size)){
+
+		// Vertice � a vertice onde ira ser feito a DFS
         int vertice;
         vertice = sacar(pilha, size);
-				
-        // Recebe um vetor que é a linha da Matriz correspondente ao Vertice a ser feita a DFS
+
+        // Recebe um vetor que � a linha da Matriz correspondente ao Vertice a ser feita a DFS
         int vetorVizinhos[size];
         copiarGrafoLinha(size, vetorVizinhos, vertice);
-        
+
 		// "i" itera sobre o vetor e marca os vizinhos ao Vertice utilizado
         for(int i=0; i < size; i++){
-			// Caso o vertice seja vizinho, (==1), e ainda não tenha sido marcado como visitado
-			// O vizinho será colocado na pilha para verificar os seus proprios vizinhos e marcado como visitado
+			// Caso o vertice seja vizinho, (==1), e ainda n�o tenha sido marcado como visitado
+			// O vizinho ser� colocado na pilha para verificar os seus proprios vizinhos e marcado como visitado
             if(vetorVizinhos[i] == 1 && !visitado[i]){
                 empurrar(pilha, size, i);
                 visitado[i] = true;
@@ -168,7 +169,7 @@ int dfs(int size, int inicial){
         }
     }
 
-	// Realiza uma contagem de quantos vertices é possivel atingir a partir do inicial
+	// Realiza uma contagem de quantos vertices � possivel atingir a partir do inicial
     int count = 0;
     for(int i = 0; i < size; i++){
         if(visitado[i] == true){
@@ -176,7 +177,7 @@ int dfs(int size, int inicial){
         }
     }
 
-	// Retornar a contagem para comparações
+	// Retornar a contagem para compara��es
     return count;
 }
 
@@ -186,9 +187,16 @@ int dfs(int size, int inicial){
 /*--------------------------------------------------------------------------------------------------------*/
 
 // Copia somente uma linha do Grafo para um vetor
-void copiarGrafoLinha(int size, int *copy, int row){   
+void copiarGrafoLinha(int size, int *copy, int row){
     for(int j = 0; j < size; j++){
         copy[j] = grafo_matriz[row][j];
+    }
+}
+void copiarGrafo(int size){   
+    for( int i = 0; i < size; i++){
+        for(int j = 0; j < size; j++){
+            grafo_matriz_copy[i][j] = grafo_matriz[i][j];
+        }
     }
 }
 /*--------------------------------------------------------------------------------------------------------*/
@@ -247,7 +255,7 @@ int qtdArestas(int size){
 }
 /*--------------------------------------------------------------------------------------------------------*/
 
-// Retorna a quantidade de arestas de um vertice e salva essas vertices em um vetor 
+// Retorna a quantidade de arestas de um vertice e salva essas vertices em um vetor
 int countArestas(int size, int *arestas, int row){
     int count = 0;
     for(int i = 0; i < size; i++){
@@ -273,19 +281,19 @@ void fillMatrix( int size, int value){
 // Valida a Aresta do grafo a ser utilizada
 bool ehArestaCorte(int start, int end, int *adjacentes, int n_arestas_vertice,
                    int size){
-  // Contabiliza a quantidade de ligações que o Vertice possui
+  // Contabiliza a quantidade de liga��es que o Vertice possui
   int count = 0;
-  for (int i = 0; i < n_arestas_vertice; i++){ 
+  for (int i = 0; i < n_arestas_vertice; i++){
     if(grafo_matriz[start][i] == 1){
       count++;
     }
   }
-  
-  // Caso o Vertice só possua uma Aresta é realizado uma DFS a fim de reconhecer se ele é uma "Aresta de corte"
+
+  // Caso o Vertice s� possua uma Aresta � realizado uma DFS a fim de reconhecer se ele � uma "Aresta de corte"
   if (count == 1){
   	// Salva a quantidade de Vertices acessiveis com a Aresta presente no grafo
     int dfs_c_aresta = dfs(size, end);
-    
+
     grafo_matriz[end][start] = 0;
     grafo_matriz[start][end] = 0;
 
@@ -295,10 +303,10 @@ bool ehArestaCorte(int start, int end, int *adjacentes, int n_arestas_vertice,
     grafo_matriz[end][start] = 1;
     grafo_matriz[start][end] = 1;
 
-  	// Ao comparar o resultado retornado pelas DFS's é definido se a aresta será usada.
+  	// Ao comparar o resultado retornado pelas DFS's � definido se a aresta ser� usada.
     return (dfs_c_aresta > dfs_s_aresta) ? false : true;
-  
-  /* Caso não seja possivel determinar via uma dfs, essa aresta sera considerada de corte se e somente se a quantidade de
+
+  /* Caso n�o seja possivel determinar via uma dfs, essa aresta sera considerada de corte se e somente se a quantidade de
    vertices conectados seja igual a 0
   */
   }else if(count > 1){
@@ -310,7 +318,7 @@ bool ehArestaCorte(int start, int end, int *adjacentes, int n_arestas_vertice,
 
 
 // Busca o vertice mais indicado para dar inicio no caminho
-// Busca um vertice com grau ímpar, caso não exista nenhum, retorna um vertice qualquer do grafo
+// Busca um vertice com grau �mpar, caso n�o exista nenhum, retorna um vertice qualquer do grafo
 int buscarInicial(int numVert){
   int grau = 0;
   for(int i=0; i < numVert; i++){
@@ -323,7 +331,7 @@ int buscarInicial(int numVert){
     if((grau % 2 ) == 1 ){
       return i;
     }
-  } 
+  }
   return 0;
 }
 /*--------------------------------------------------------------------------------*/
@@ -333,7 +341,7 @@ void fleury(int size, int start){
   // Contagem de vertices visitados
   int vertices_visitados = 0;
   int v = start;
-  
+  copiarGrafo(size);
   /* Calcula o tamanho maximo do caminho que pode ser percorrido
   int max_caminho_size = ((size * (size-1))/2);
   if(max_caminho_size > MAX_CAMINHO){
@@ -343,13 +351,13 @@ void fleury(int size, int start){
   // Caminho feito no grafo a ser impresso
   int caminho[max_caminho_size];
   */
-  caminho[vertices_visitados] = start; 
+  caminho[vertices_visitados] = start;
   vertices_visitados++;
-  
+
   while(true){
     // Cria um vetor com as arestas dado o vertice inicial
     int arestas_vertice[size];
-	
+
     // Quantidade de arestas naquele vertice
     int n_arestas_vertice = 0;
     n_arestas_vertice = countArestas(size, arestas_vertice, start);
@@ -357,48 +365,48 @@ void fleury(int size, int start){
     // Itera sobre as arestas
     int i;
     for (i = 0; i < n_arestas_vertice; i++){
-    // V recebe a Aresta 
+    // V recebe a Aresta
 	  v = arestas_vertice[i];
-	  
-      // Verfica se a posição no Grafo é valida e se a Aresta não é de corte
+
+      // Verfica se a posi��o no Grafo � valida e se a Aresta n�o � de corte
       if (grafo_matriz[start][v] == 1 && ehArestaCorte(start, v, arestas_vertice, n_arestas_vertice, size)){
-	    	// Caso a Aresta seja validada ela é removida do Grafo
+	    	// Caso a Aresta seja validada ela � removida do Grafo
         grafo_matriz[start][v] = 0;
         grafo_matriz[v][start] = 0;
-		
-	    	// O ponto final da Aresta é se torna o ponto inicial para as proximas verificações
-        start = v;  
+
+	    	// O ponto final da Aresta � se torna o ponto inicial para as proximas verifica��es
+        start = v;
 
 	    	// Guarda o Vertice para printar caminho
-        caminho[vertices_visitados] = start; 
+        caminho[vertices_visitados] = start;
         vertices_visitados++;
         break;
       }
     }
-	
-	  // Caso o Vertice não seja validado anteriormente é escolha a ultima Aresta
+
+	  // Caso o Vertice n�o seja validado anteriormente � escolha a ultima Aresta
     if(i >= n_arestas_vertice){
         // Remove a Aresta do Grafo
         grafo_matriz[start][v] = 0;
-        grafo_matriz[v][start] = 0; 
-		
-        // O ponto final da Aresta é se torna o ponto inicial para as proximas verificações
+        grafo_matriz[v][start] = 0;
+
+        // O ponto final da Aresta � se torna o ponto inicial para as proximas verifica��es
         start = v;
-		
+
         // Guarda o Vertice para printar caminho
-        caminho[vertices_visitados] = start; 
+        caminho[vertices_visitados] = start;
         vertices_visitados++;
     }
 
-  	// Caso de saida uma Vertice que não possui Arestas
+  	// Caso de saida uma Vertice que n�o possui Arestas
     if(n_arestas_vertice == 0){
 	    // Remove pois visita a si mesmo garantindo ser o ultimo ponto
-	    vertices_visitados--; 
+	    vertices_visitados--;
       break;
     }
   }
 
-  // Printa o Grafo após percorer todos os caminhos validos
+  // Printa o Grafo ap�s percorer todos os caminhos validos
   printGrafo(size);
 
   // Um Grafo contem um caminho Euleriano se somente se ele percore todas as arestas contidas nele.
@@ -407,31 +415,50 @@ void fleury(int size, int start){
     for( int i = 0 ; i < vertices_visitados; i++){
       printf("-> %d ", caminho[i]);
     }
+
+    printf("\nValidação\n");
+    validar(caminho, vertices_visitados);
+
   }else{
-    printf("\nO grafo não possui trilha euleriana!");
+    printf("\nO grafo n�o possui trilha euleriana!");
   }
 
   printf("\n");
-} 
+
+}
+
+// validar caminho obtido com a copia da matriz
+void validar(int *caminho, int vertices_visitados){
+    int i;
+    for( i = 0 ; i < vertices_visitados-1; i++){
+      if(grafo_matriz_copy[caminho[i]][caminho[i+1]] == 1){
+        printf("-> %d ", caminho[i]);
+        grafo_matriz_copy[caminho[i]][caminho[i+1]] = 0;
+      }else{
+        printf("\nERROR ERROR ERROR ERRORERROR ERROR ERROR ERROR ERROR ERRORERROR %d -> %d\n", caminho[i], caminho[i+1]);
+      }
+    }
+
+}
 
 
 /*--------------------------------------------------------------------------------------------------------*/
 
-// Função para teste exaustivo da aplicação
+// Fun��o para teste exaustivo da aplica��o
 void teste(){
-  printf("\n\nTESTES\n"); 
+  printf("\n\nTESTES\n");
   int i;
   for( i = MIN_SIZE; i <= MAX_SIZE; i++){
     printf("\n\nSIZE: %d", i);
     fillMatrix(i, 0);
 
     create(i);
-    // Busca um vertice para iniciar a verificação do grafo
-    int start = buscarInicial(i); 
+    // Busca um vertice para iniciar a verifica��o do grafo
+    int start = buscarInicial(i);
 
     // Trabalha para encontrar um caminho Euleriano no grafo
     fleury(i, start);
-  } 
+  }
 }
 /*--------------------------------------------MAIN-----------------------------------------------------*/
 int main(){
@@ -439,17 +466,17 @@ int main(){
   int matrix_size;
   printf("Digite o tamanho da matriz: TxT\n");
   scanf("%d", &matrix_size);
-  
+
   // Valida se o valor recebido esta dentro dos limites
   if( matrix_size > MAX_SIZE || matrix_size < MIN_SIZE){
-    printf("O tamanho máximo aceitado de linhas/colunas é de %d e o minimo é %d\n", MAX_SIZE, MIN_SIZE);
+    printf("O tamanho m�ximo aceitado de linhas/colunas � de %d e o minimo � %d\n", MAX_SIZE, MIN_SIZE);
     exit(0);
   }
 
   // Cria o grafo e o preenche com 0
   //int grafo[matrix_size][matrix_size];
   fillMatrix(matrix_size, 0);
-  
+
   // Recebe o modo de entradas desejado
   int n_arestas;
   char option;
@@ -459,13 +486,13 @@ int main(){
   switch(option){
     case 'A':
     case 'a':
-      printf("Insira os %d valores da matriz de adjacencia, cada valor inserido deve ser 0 ou 1 e devem ser separados por espaço!\n", (matrix_size * matrix_size));
+      printf("Insira os %d valores da matriz de adjacencia, cada valor inserido deve ser 0 ou 1 e devem ser separados por espa�o!\n", (matrix_size * matrix_size));
       for(int i = 0; i < matrix_size; i++){
         for(int j = 0; j < matrix_size; j++ ){
           // Recebe a entrada do usuario
 	    	  int temp;
           scanf("%d", &temp);
-		  
+
 		      // Valida a entrada do usuario, os valores podem ser somente 0 ou 1
           if(temp != 0 && temp != 1){
             printf("Valor invalido, insira 1 ou 0!\n");
@@ -483,10 +510,10 @@ int main(){
       printf("Digite quantas arestas o grafo possui!\n");
       scanf("%d", &n_arestas);
       getchar();
-      
+
 	    // Valida a entrada do usuario, o grafo deve possuir no minimo 1 Aresta
       if(n_arestas <= 0){
-        printf("O número de arestas digitado é invalido!\n");
+        printf("O n�mero de arestas digitado � invalido!\n");
         exit(0);
       }
 
@@ -496,10 +523,10 @@ int main(){
         int x,y;
         scanf("%d-%d", &x, &y);
         printf("\nPAR: %d -> %d\n", x, y);
-		
+
 	    	// Valida se a Aresta esta contida no Grafo
         if(x < 0 || y < 0 || x >= matrix_size || y >= matrix_size ){
-          printf("\nValor inválido, digite valores de 0 ate %d\n", matrix_size-1);
+          printf("\nValor inv�lido, digite valores de 0 ate %d\n", matrix_size-1);
           getchar();
           i--;
         }else{
@@ -520,7 +547,7 @@ int main(){
       break;
   	// Valida o caso de entrada
     default:
-      printf("Opção inválida\n");
+      printf("Op��o inv�lida\n");
       exit(0);
       break;
   }
@@ -534,8 +561,8 @@ int main(){
     printf("\n");
   }
 
-  // Busca um vertice para iniciar a verificação do grafo
-  int start = buscarInicial(matrix_size); 
+  // Busca um vertice para iniciar a verifica��o do grafo
+  int start = buscarInicial(matrix_size);
 
   // Trabalha para encontrar um caminho Euleriano no grafo
   fleury(matrix_size, start);

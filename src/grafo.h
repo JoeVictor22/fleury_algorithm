@@ -14,7 +14,13 @@ void copiarGrafoLinha(int size, int *copy, int row){
     }
 }
 /*--------------------------------------------------------------------------------------------------------*/
-
+void copiarGrafo(int size){   
+    for( int i = 0; i < size; i++){
+        for(int j = 0; j < size; j++){
+            grafo_matriz_copy[i][j] = grafo_matriz[i][j];
+        }
+    }
+}
 // Printa o Grafo em sua integridade
 void printGrafo(int size){
     printf("\nGRAFO:\n");
