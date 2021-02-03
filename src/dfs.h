@@ -1,17 +1,17 @@
 #include <stdbool.h>
 #include <stdio.h>
+#include "definitions.h"
 
 /*------------------------------------------------HEADERS-------------------------------------------------*/
 // Import explicito de funcoes do grafo.h para evitar erros 
-void copiarGrafo(int size, int (*copy)[size], int (*orig)[size]);   
-void copiarGrafoLinha(int size, int *copy, int (*orig)[size], int row);   
-void printGrafo(int size, int (*grafo)[size]);
+void copiarGrafoLinha(int size, int *copy, int row);   
+void printGrafo(int size);
 void printLinha(int size, int *vector);
-void addAresta( int size, int i, int j, int (*matriz)[size]);
-bool ehArestaCorte(int start, int end, int *adjacentes, int n_arestas_vertice, int size, int (*grafo)[size]);
-int qtdArestas(int size, int (*grafo)[size]);
-int countArestas(int size, int *arestas, int (*grafo)[size], int row);
-void fillMatrix( int size, int value, int (*vector)[size]);
+void addAresta( int size, int i, int j);
+bool ehArestaCorte(int start, int end, int *adjacentes, int n_arestas_vertice, int size);
+int qtdArestas(int size);
+int countArestas(int size, int *arestas, int row);
+void fillMatrix( int size, int value);
 /*--------------------------------------------------------------------------------------------------------*/
 
 
@@ -71,7 +71,7 @@ int sacar(int *pilha,int size){
 /*Implementação iterativa do DFS modificada para retornar a quantidade de arestas acessiveis dado um      */
 /*vertice inicial                                                                                         */
 /*--------------------------------------------------------------------------------------------------------*/
-int dfs(int size, int (*grafo)[size], int inicial){
+int dfs(int size, int inicial){
     // Pilha de proximos a entrar na DFS
     int pilha[size];
     iniciarVetor(pilha, size);
@@ -95,7 +95,7 @@ int dfs(int size, int (*grafo)[size], int inicial){
 				
         // Recebe um vetor que é a linha da Matriz correspondente ao Vertice a ser feita a DFS
         int vetorVizinhos[size];
-        copiarGrafoLinha(size, vetorVizinhos, grafo, vertice);
+        copiarGrafoLinha(size, vetorVizinhos, vertice);
         
 		// "i" itera sobre o vetor e marca os vizinhos ao Vertice utilizado
         for(int i=0; i < size; i++){

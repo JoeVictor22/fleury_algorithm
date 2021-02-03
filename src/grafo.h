@@ -1,35 +1,26 @@
 #include <stdbool.h>
 #include <stdio.h>
-
-
+#include "definitions.h"
 /*--------------------------------------------------------------------------------------------------------*/
 /*         Utilitarios para ser utilizado no Grafo necessario para a aplicação                            */
 /*--------------------------------------------------------------------------------------------------------*/
 
-// Cria uma copia do grafo
-void copiarGrafo(int size, int (*copy)[size], int (*orig)[size]){   
-    for( int i = 0; i < size; i++){
-        for(int j = 0; j < size; j++){
-            copy[i][j] = orig[i][j];
-        }
-    }
-}
 /*--------------------------------------------------------------------------------------------------------*/
 
 // Copia somente uma linha do Grafo para um vetor
-void copiarGrafoLinha(int size, int *copy, int (*orig)[size], int row){   
+void copiarGrafoLinha(int size, int *copy, int row){   
     for(int j = 0; j < size; j++){
-        copy[j] = orig[row][j];
+        copy[j] = grafo_matriz[row][j];
     }
 }
 /*--------------------------------------------------------------------------------------------------------*/
 
 // Printa o Grafo em sua integridade
-void printGrafo(int size, int (*grafo)[size]){
+void printGrafo(int size){
     printf("\nGRAFO:\n");
     for( int i =0 ; i < size; i++){
         for( int j= 0; j < size; j++){
-            printf("%d ", grafo[i][j]);
+            printf("%d ", grafo_matriz[i][j]);
         }
         printf("\n");
     }
@@ -39,11 +30,11 @@ void printGrafo(int size, int (*grafo)[size]){
 /*
 Utilitario para gerar uma matriz, caso o tamanho seja impar ela sera euleriana
 */
-void create(int size, int (*matriz)[size]){
+void create(int size){
   for(int i =0 ; i < size; i++){
     for( int j=0; j < size; j++){
       if (j != i){
-        matriz[i][j] = 1;
+        grafo_matriz[i][j] = 1;
       }
     }
   }
@@ -60,18 +51,18 @@ void printLinha(int size, int *vector){
 /*--------------------------------------------------------------------------------------------------------*/
 
 // Recebe uma aresta na forma de par e adiciona a matriz de adjacencia
-void addAresta( int size, int i, int j, int (*matriz)[size]){
-  matriz[i][j] = 1;
-  matriz[j][i] = 1;
+void addAresta( int size, int i, int j){
+  grafo_matriz[i][j] = 1;
+  grafo_matriz[j][i] = 1;
 }
 /*--------------------------------------------------------------------------------------------------------*/
 
 // Calcula a quantidade de arestas presentes no grafo
-int qtdArestas(int size, int (*grafo)[size]){
+int qtdArestas(int size){
   int arestas=0;
   for (int i=0;i<size;i++){
     for (int j=i;j<size;j++){
-      arestas+=grafo[i][j];
+      arestas+=grafo_matriz[i][j];
     }
   }
   return arestas;
@@ -79,10 +70,10 @@ int qtdArestas(int size, int (*grafo)[size]){
 /*--------------------------------------------------------------------------------------------------------*/
 
 // Retorna a quantidade de arestas de um vertice e salva essas vertices em um vetor 
-int countArestas(int size, int *arestas, int (*grafo)[size], int row){
+int countArestas(int size, int *arestas, int row){
     int count = 0;
     for(int i = 0; i < size; i++){
-        if(grafo[row][i] == 1){
+        if(grafo_matriz[row][i] == 1){
             arestas[count] = i;
             count++;
         }
@@ -92,10 +83,10 @@ int countArestas(int size, int *arestas, int (*grafo)[size], int row){
 /*--------------------------------------------------------------------------------------------------------*/
 
 //Preenche dada matriz com um valor recebido
-void fillMatrix( int size, int value, int (*vector)[size]){
+void fillMatrix( int size, int value){
   for(int i = 0; i < size; i++){
     for(int j = 0; j < size; j++){
-      vector[i][j] = value;
+      grafo_matriz[i][j] = value;
     }
   }
 }
@@ -103,11 +94,11 @@ void fillMatrix( int size, int value, int (*vector)[size]){
 
 // Valida a Aresta do grafo a ser utilizada
 bool ehArestaCorte(int start, int end, int *adjacentes, int n_arestas_vertice,
-                   int size, int (*grafo)[size]){
+                   int size){
   // Contabiliza a quantidade de ligações que o Vertice possui
   int count = 0;
   for (int i = 0; i < n_arestas_vertice; i++){ 
-    if(grafo[start][i] == 1){
+    if(grafo_matriz[start][i] == 1){
       count++;
     }
   }
@@ -115,16 +106,16 @@ bool ehArestaCorte(int start, int end, int *adjacentes, int n_arestas_vertice,
   // Caso o Vertice só possua uma Aresta é realizado uma DFS a fim de reconhecer se ele é uma "Aresta de corte"
   if (count == 1){
   	// Salva a quantidade de Vertices acessiveis com a Aresta presente no grafo
-    int dfs_c_aresta = dfs(size, grafo, end);
+    int dfs_c_aresta = dfs(size, end);
     
-    grafo[end][start] = 0;
-    grafo[start][end] = 0;
+    grafo_matriz[end][start] = 0;
+    grafo_matriz[start][end] = 0;
 
   	// Salva a quantidade de Vertices acessiveis sem a Aresta presente no grafo
-    int dfs_s_aresta = dfs(size, grafo, end);
+    int dfs_s_aresta = dfs(size, end);
 
-    grafo[end][start] = 1;
-    grafo[start][end] = 1;
+    grafo_matriz[end][start] = 1;
+    grafo_matriz[start][end] = 1;
 
   	// Ao comparar o resultado retornado pelas DFS's é definido se a aresta será usada.
     return (dfs_c_aresta > dfs_s_aresta) ? false : true;
