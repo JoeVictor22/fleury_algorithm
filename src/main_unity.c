@@ -438,6 +438,7 @@ void validar(int *caminho, int vertices_visitados){
         printf("\nERROR ERROR ERROR ERRORERROR ERROR ERROR ERROR ERROR ERRORERROR %d -> %d\n", caminho[i], caminho[i+1]);
       }
     }
+    printf("-> %d ", caminho[i]);
 
 }
 
