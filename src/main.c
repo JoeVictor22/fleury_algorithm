@@ -78,7 +78,7 @@ void fleury(int size, int start){
   int vertices_visitados = 0;
   int v = start;
   
-  // Calcula o tamanho maximo do caminho que pode ser percorrido
+  /* Calcula o tamanho maximo do caminho que pode ser percorrido
   int max_caminho_size = ((size * (size-1))/2);
   if(max_caminho_size > MAX_CAMINHO){
     max_caminho_size = MAX_CAMINHO;
@@ -86,6 +86,7 @@ void fleury(int size, int start){
 
   // Caminho feito no grafo a ser impresso
   int caminho[max_caminho_size];
+  */
   caminho[vertices_visitados] = start; 
   vertices_visitados++;
   

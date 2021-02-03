@@ -8,4 +8,4 @@
 
 // matriz utilizada para a computação dos dados
 int grafo_matriz[MAX_SIZE][MAX_SIZE];
-int matriz_copia_teste[MAX_SIZE];
+int caminho[MAX_CAMINHO];
