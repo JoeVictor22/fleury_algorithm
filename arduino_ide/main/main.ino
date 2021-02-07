@@ -3,18 +3,18 @@
 #include <avr/pgmspace.h>
 #include <EEPROM.h>
 
-#define TAM_MATRIX_MAX 41
+#define TAM_MATRIX_MAX 40
 
 
 int tam_matrix = 0;
 char grafo_matriz[TAM_MATRIX_MAX][TAM_MATRIX_MAX];
-const int  pos_visitado PROGMEM = TAM_MATRIX_MAX + 1;
+const int pos_visitado PROGMEM = TAM_MATRIX_MAX + 1;
 const int pos_vetorVizinhos PROGMEM = (TAM_MATRIX_MAX * 2) + 1;
 const int pos_arestas_vertice PROGMEM = (TAM_MATRIX_MAX * 3) + 1; 
 
 void setup(){
   Serial.begin(9600); // Baudrate do terminal de entrada pinos 1,2
-  Serial.setTimeout(10000);
+  Serial.setTimeout(20000);
 }
 
 void loop(){
@@ -22,7 +22,7 @@ void loop(){
   recebe_matrix();
 
   fleury();
-  dormir();
+  //dormir();
 }
 
 void dormir(){
@@ -63,7 +63,7 @@ void tamanho_mat(){
     if (Serial.available()){
       tam_matrix=Serial.parseInt(SKIP_ALL);
       if(tam_matrix>1  && tam_matrix<=TAM_MATRIX_MAX){
-        //Serial.println(tam_matrix);
+        Serial.println(tam_matrix);
         break;  
       }
     }
@@ -77,10 +77,13 @@ void recebe_matrix(){
         Serial.flush();
         if(Serial.available()){
           grafo_matriz[i][j]=Serial.parseInt(SKIP_ALL);
+          Serial.print(grafo_matriz[i][j]-0);
+          Serial.print(" ");
           break;
         }
       }
     }
+    Serial.println();
   }
 }
 
@@ -180,8 +183,10 @@ void fleury(){
 
   // Um Grafo contem um caminho Euleriano se somente se ele percore todas as arestas contidas nele.
   if (qtdArestas() > 0){
-    Serial.println("-1");   
+    Serial.println();
+    Serial.println("Grafo nao contem caminho Fleuriano");
   }
+  printGrafo();
   Serial.println(" ");
 }
 
@@ -389,9 +394,10 @@ int sacar(int *pilha){
 
 // Printa o Grafo em sua integridade
 void printGrafo(){
+    Serial.println();
     for( int i =0 ; i < tam_matrix; i++){
         for( int j= 0; j < tam_matrix; j++){
-            Serial.print(grafo_matriz[i][j]);
+            Serial.print(grafo_matriz[i][j]-0);
             Serial.print(" ");
         }
         Serial.println();
