@@ -3,7 +3,7 @@
 #include <avr/pgmspace.h>
 #include <EEPROM.h>
 
-#define TAM_MATRIX_MAX 26
+#define TAM_MATRIX_MAX 41
 
 
 int tam_matrix = 0;
@@ -14,6 +14,7 @@ const int pos_arestas_vertice PROGMEM = (TAM_MATRIX_MAX * 3) + 1;
 
 void setup(){
   Serial.begin(9600); // Baudrate do terminal de entrada pinos 1,2
+  Serial.setTimeout(10000);
 }
 
 void loop(){

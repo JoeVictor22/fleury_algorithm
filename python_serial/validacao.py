@@ -1,4 +1,3 @@
-import serial
 import time
 from pprint import pprint
 
