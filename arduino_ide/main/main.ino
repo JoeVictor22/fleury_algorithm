@@ -22,13 +22,13 @@ void loop(){
   recebe_matrix();
 
   fleury();
-  //dormir();
+  dormir();
 }
 
 void dormir(){
   delay(200);
   
-  set_sleep_mode(SLEEP_MODE_PWR_DOWN); // sleep mode is set here
+  set_sleep_mode(SLEEP_MODE_IDLE); // sleep mode is set here
   sleep_enable(); // enables the sleep bit in the mcucr register
   // so sleep is possible. just a safety pin
   power_adc_disable();
@@ -47,7 +47,7 @@ void dormir(){
         // THE PROGRAM CONTINUES FROM HERE AFTER WAKING UP
         sleep_disable(); // first thing after waking from sleep:
         // disable sleep...
-       
+
         power_all_enable();
         break;
       }
@@ -121,7 +121,7 @@ void fleury(){
   // Caminho feito no grafo a ser impresso
   int caminho[max_caminho_size];
   */
-  Serial.print("-> ");
+  Serial.print(" ");
   Serial.print(start);  
 
   vertices_visitados++;
@@ -148,7 +148,7 @@ void fleury(){
         start = v;  
 
         // Guarda o Vertice para printar caminho
-        Serial.print(" -> ");
+        Serial.print(" ");
         Serial.print(start);
         vertices_visitados++;
         break;
@@ -165,7 +165,7 @@ void fleury(){
         start = v;
     
         // Guarda o Vertice para printar caminho
-        Serial.print(" -> ");
+        Serial.print(" ");
         Serial.print(start);
         vertices_visitados++;
     }
