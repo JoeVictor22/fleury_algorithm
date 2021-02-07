@@ -6,8 +6,7 @@
 #define TAM_MATRIX_MAX 26
 
 int tam_matrix = 0;
-int grafo_matriz[TAM_MATRIX_MAX][TAM_MATRIX_MAX];
-int pos_pilha = 0;
+char grafo_matriz[TAM_MATRIX_MAX][TAM_MATRIX_MAX];
 int pos_visitado = TAM_MATRIX_MAX + 1;
 int pos_vetorVizinhos = (TAM_MATRIX_MAX * 2) + 1;
 int pos_arestas_vertice = (TAM_MATRIX_MAX * 3) + 1; 
@@ -144,7 +143,7 @@ void fleury(){
         start = v;  
 
         // Guarda o Vertice para printar caminho
-        Serial.print("-> ");
+        Serial.print(" -> ");
         Serial.print(start);
         vertices_visitados++;
         break;
@@ -161,7 +160,7 @@ void fleury(){
         start = v;
     
         // Guarda o Vertice para printar caminho
-        Serial.print("-> ");
+        Serial.print(" -> ");
         Serial.print(start);
         vertices_visitados++;
     }

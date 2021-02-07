@@ -2,77 +2,41 @@ import serial
 import time
 from pprint import pprint
 
-def create(size):
-    grafo = [[0 for i in range(size)] for j in range(size)] 
-    for i in range(size):
-        for j in range(size):
-            if j != i:
-                grafo[i][j] = 1
-    return grafo
-
 def validar(grafo, caminho):
     for i in range(len(caminho) - 1):
         if grafo[caminho[i]][caminho[i+1]] == 1:
-            print("->" + caminho[i], end=" ")
+            #print("->" + strcaminho[i], end=" ")
             grafo[caminho[i]][caminho[i+1]] = 0
+            grafo[caminho[i+1]][caminho[i]] = 0
         else:        
             return False
+    
+    for i in range(len(grafo)):
+        for j in range(len(grafo)):
+            if grafo[i][j] == 1:
+                return False
+
     return True
 
-def ler_arduino():
-    print("Aguardando resposta: ")    
-    resposta = arduino.readline()
-    print(resposta.decode())
+
+grafo = []
+caminho = []
+with open('grafo') as f:
+    size = [int(x) for x in next(f).split()] # read first line
+    
+    for line in f: # read rest of lines
+        grafo.append([int(x) for x in line.split()])
 
 
+with open('caminho') as f:
+    [caminho.append(int(x)) for x in next(f).split()] # read first line
+    
+pprint(grafo)
+pprint(caminho)
 
-arduino = serial.Serial('COM7', 9600, timeout=2)
+if validar(grafo, caminho):
+    print("Trilha valida")
+else:
+    print("Trilha invalida")
 
-#grafo = create(size)
 #pprint(grafo)
-
-
-
-while(True):
-    
-    ler_arduino()
-
-    tamanho = input("Digite o tamanho da matriz\n")
-    if tamanho != "":
-        tamanho = str(tamanho)
-        #arduino.write(str(chr(int(tamanho))).encode())
-        arduino.write(tamanho.encode())
-
-    ler_arduino()
-    for i in range(int(tamanho)):
-        for j in range(int(tamanho)):
-            entrada = input()
-            
-            if entrada != "":
-                entrada = int(entrada)
-                #arduino.write(str(chr(entrada)).encode())
-                arduino.write(entrada.encode())
-            else:
-                print("valor invalido, " + str(entrada))
-                j-=1
-
-
-    print("Aguardando caminho: ")    
-    caminho = arduino.readline()
-    
-    print(caminho.decode())
-
-    while arduino.readable():
-        caminho = arduino.readline()
-        if str(caminho) == "A":
-            print('fim do caminho')
-            break; 
-        print(caminho.decode())
-        
-
-
-    
-#if not validar(grafo, caminho, size):
-#    print("ERROR na validação")
-
-
