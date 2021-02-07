@@ -5,29 +5,23 @@
 
 #define TAM_MATRIX_MAX 26
 
+
 int tam_matrix = 0;
 char grafo_matriz[TAM_MATRIX_MAX][TAM_MATRIX_MAX];
-int pos_pilha = 0;
-int pos_visitado = (TAM_MATRIX_MAX*2) + 1;
-int pos_arestas_vertice = (TAM_MATRIX_MAX * 4) + 1; 
-int pos_vetorVizinhos = (TAM_MATRIX_MAX * 6) + 1;
+const int  pos_visitado PROGMEM = TAM_MATRIX_MAX + 1;
+const int pos_vetorVizinhos PROGMEM = (TAM_MATRIX_MAX * 2) + 1;
+const int pos_arestas_vertice PROGMEM = (TAM_MATRIX_MAX * 3) + 1; 
 
 void setup(){
   Serial.begin(9600); // Baudrate do terminal de entrada pinos 1,2
 }
 
 void loop(){
-  Serial.println("asdoiasdio");
   tamanho_mat();
-  if (tam_matrix > 1){
-    recebe_matrix();
-    printGrafo();  
-    fleury();
-  }
-  
-  Serial.println("estou rodandooooooo");
-  
-  //dormir();
+  recebe_matrix();
+
+  fleury();
+  dormir();
 }
 
 void dormir(){
@@ -65,11 +59,10 @@ void tamanho_mat(){
 
   while(true){
     Serial.flush();
-    Serial.println("rt");
     if (Serial.available()){
-      tam_matrix=Serial.read() - '0';
+      tam_matrix=Serial.parseInt(SKIP_ALL);
       if(tam_matrix>1  && tam_matrix<=TAM_MATRIX_MAX){
-        Serial.println(tam_matrix);
+        //Serial.println(tam_matrix);
         break;  
       }
     }
@@ -80,12 +73,9 @@ void recebe_matrix(){
   for (int i=0;i<tam_matrix;i++){
     for (int j=0;j<tam_matrix;j++){
       while(true){
-          Serial.println("rm");
         Serial.flush();
         if(Serial.available()){
           grafo_matriz[i][j]=Serial.parseInt(SKIP_ALL);
-          Serial.println("r");
-
           break;
         }
       }
@@ -113,7 +103,7 @@ int buscarInicial(){
 
 // Busca um caminho ou ciclo euleriano no grafo assim como avalia algumas caracteristicas do grafo
 void fleury(){
-  int start = buscarInicial();
+  int start = buscarInicial();;
   // Contagem de vertices visitados
   int vertices_visitados = 0;
   int v = start;
@@ -142,7 +132,7 @@ void fleury(){
     int i;
     for (i = 0; i < n_arestas_vertice; i++){
     // V recebe a Aresta 
-    v = lerIntEEPROM(pos_arestas_vertice + i);
+    v = lerIntEEPROM(pgm_read_word_near(pos_arestas_vertice) + i);
     
       // Verfica se a posição no Grafo é valida e se a Aresta não é de corte
       if (grafo_matriz[start][v] == 1 && ehArestaCorte(start, v, n_arestas_vertice)){
@@ -154,7 +144,7 @@ void fleury(){
         start = v;  
 
         // Guarda o Vertice para printar caminho
-        Serial.print("-> ");
+        Serial.print(" -> ");
         Serial.print(start);
         vertices_visitados++;
         break;
@@ -171,7 +161,7 @@ void fleury(){
         start = v;
     
         // Guarda o Vertice para printar caminho
-        Serial.print("-> ");
+        Serial.print(" -> ");
         Serial.print(start);
         vertices_visitados++;
     }
@@ -199,7 +189,7 @@ int countArestas(int row){
     int count = 0;
     for(int i = 0; i < tam_matrix; i++){
         if(grafo_matriz[row][i] == 1){
-            escreverIntEEPROM(pos_arestas_vertice + count, i);
+            escreverIntEEPROM(pgm_read_word_near(pos_arestas_vertice) + count, i);
             count++;
         }
     }
@@ -269,13 +259,6 @@ void escreverIntEEPROM(int pos, int valor){
     EEPROM.write(pos++, *p++);
   }
 }
-void escreverCharEEPROM(int pos, char valor){
-  byte* p = (byte*)(void*)&valor;
-  for (int i = 0; i < sizeof(valor); i++)
-  {
-    EEPROM.write(pos++, *p++);
-  }
-}
 
 bool lerBoolEEPROM(int pos){
   bool valor = false;
@@ -295,44 +278,37 @@ int lerIntEEPROM(int pos){
   }
   return valor;
 }
-int lerCharEEPROM(int pos){
-  char valor = 0;
-  byte* p = (byte*)(void*)&valor;
-  for (int i = 0; i < sizeof(valor); i++)
-  {
-  *p++ = EEPROM.read(pos++);
-  }
-  return valor;
-}
 
 // Copia somente uma linha do Grafo para um vetor
 void copiarGrafoLinha(int row){   
     for(int j = 0; j < tam_matrix; j++){
-        escreverCharEEPROM(pos_vetorVizinhos + j, grafo_matriz[row][j]);
+        escreverIntEEPROM(pgm_read_word_near(pos_vetorVizinhos) + j, grafo_matriz[row][j]);
     }
 }
+
 int dfs(int inicial){
     // Pilha de proximos a entrar na DFS
-    iniciarVetorIntEEPROM(pos_pilha, -1);
+    int pilha[tam_matrix];
+    iniciarVetor(pilha);
 
   // Vetor boolenao armazenando vertices que são possiveis ser acessados
-    iniciarVetorBoolEEPROM(pos_visitado, false);
+    iniciarVetorBoolEEPROM(pgm_read_word_near(pos_visitado), false);
     for(int i = 0; i < tam_matrix; i++){
-        escreverBoolEEPROM(pos_visitado + i, false);
+        escreverBoolEEPROM(pgm_read_word_near(pos_visitado) + i, false);
         //visitado[i] = false;
     }
 
   // A primeira vertice na DFS é o inicial passado como argumento
-    empurrar(inicial);
-    escreverBoolEEPROM(pos_visitado + inicial, true);
+    empurrar(pilha, inicial);
+    escreverBoolEEPROM(pgm_read_word_near(pos_visitado) + inicial, true);
     //visitado[inicial] = true;
   
   // Realiza verificações até a pilha estar vazia
-    while(!ehVazio()){ 
+    while(!ehVazio(pilha)){ 
         
     // Vertice é a vertice onde ira ser feito a DFS
         int vertice;
-        vertice = sacar();
+        vertice = sacar(pilha);
         
         // Recebe um vetor que é a linha da Matriz correspondente ao Vertice a ser feita a DFS
         //int vetorVizinhos[size];
@@ -343,11 +319,11 @@ int dfs(int inicial){
       // Caso o vertice seja vizinho, (==1), e ainda não tenha sido marcado como visitado
       // O vizinho será colocado na pilha para verificar os seus proprios vizinhos e marcado como visitado
             //if(vetorVizinhos[i] == 1 && !visitado[i]){
-            if(lerCharEEPROM(pos_vetorVizinhos + i) == 1 && !lerBoolEEPROM(pos_visitado + i)){
-                empurrar(i);
+            if(lerIntEEPROM(pgm_read_word_near(pos_vetorVizinhos) + i) == 1 && !lerBoolEEPROM(pgm_read_word_near(pos_visitado) + i)){
+                empurrar(pilha, i);
 
                 //visitado[i] = true;
-                escreverBoolEEPROM(pos_visitado + i, true);
+                escreverBoolEEPROM(pgm_read_word_near(pos_visitado) + i, true);
             }
         }
     }
@@ -356,7 +332,7 @@ int dfs(int inicial){
     int count = 0;
     for(int i = 0; i < tam_matrix; i++){
         //if(visitado[i] == true){
-        if(lerBoolEEPROM(pos_visitado + i) == true){
+        if(lerBoolEEPROM(pgm_read_word_near(pos_visitado) + i) == true){
             count++;
         }
     }
@@ -367,12 +343,17 @@ int dfs(int inicial){
 
 
 /*--------------------------------------------PILHA-------------------------------------------------------*/
+void iniciarVetor(int *vector){
+    for(int i=0; i < tam_matrix;i++){
+        vector[i] = -1;
+    }
+}
 
 // Verifica se a pilha esta preenchida com somente valores -1
 // Caso verdade a pilha se encontra vazia, retorna TRUE.
-bool ehVazio(){
+bool ehVazio(int *pilha){
     for(int i=0; i < tam_matrix; i++){
-        if(lerIntEEPROM(pos_pilha + i) != -1){
+        if(pilha[i] != -1){
             return false;
         }    
     }
@@ -380,27 +361,26 @@ bool ehVazio(){
 }
 
 // Insere um valor no topo da pilha
-void empurrar(int value){
+void empurrar(int *pilha, int value){
     int i;
     for(i = 0; i < tam_matrix; i++){
-        if(lerIntEEPROM(pos_pilha + i) == -1){
+        if(pilha[i] == -1){
             break;
         }
     }
-    escreverIntEEPROM(pos_pilha + i, value);
+    pilha[i] = value;
 }
 
 // Saca o valor que se encontra no topo da pilha
-int sacar(){
+int sacar(int *pilha){
     int i;
     for(i=0; i < tam_matrix; i++){
-        if(lerIntEEPROM(pos_pilha + i) == -1){
+        if(pilha[i] == -1){
             break;
         }    
     }
-    int aux = lerIntEEPROM(pos_pilha + i - 1);
-    escreverIntEEPROM(pos_pilha + i - 1, -1);
-
+    int aux = pilha[i-1];
+    pilha[i-1] = -1;
     return aux;
 }
 

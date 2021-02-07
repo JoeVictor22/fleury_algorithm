@@ -5,11 +5,12 @@
 
 #define TAM_MATRIX_MAX 26
 
+
 int tam_matrix = 0;
 char grafo_matriz[TAM_MATRIX_MAX][TAM_MATRIX_MAX];
-int pos_visitado = TAM_MATRIX_MAX + 1;
-int pos_vetorVizinhos = (TAM_MATRIX_MAX * 2) + 1;
-int pos_arestas_vertice = (TAM_MATRIX_MAX * 3) + 1; 
+const int  pos_visitado PROGMEM = TAM_MATRIX_MAX + 1;
+const int pos_vetorVizinhos PROGMEM = (TAM_MATRIX_MAX * 2) + 1;
+const int pos_arestas_vertice PROGMEM = (TAM_MATRIX_MAX * 3) + 1; 
 
 void setup(){
   Serial.begin(9600); // Baudrate do terminal de entrada pinos 1,2
@@ -131,7 +132,7 @@ void fleury(){
     int i;
     for (i = 0; i < n_arestas_vertice; i++){
     // V recebe a Aresta 
-    v = lerIntEEPROM(pos_arestas_vertice + i);
+    v = lerIntEEPROM(pgm_read_word_near(pos_arestas_vertice) + i);
     
       // Verfica se a posição no Grafo é valida e se a Aresta não é de corte
       if (grafo_matriz[start][v] == 1 && ehArestaCorte(start, v, n_arestas_vertice)){
@@ -188,7 +189,7 @@ int countArestas(int row){
     int count = 0;
     for(int i = 0; i < tam_matrix; i++){
         if(grafo_matriz[row][i] == 1){
-            escreverIntEEPROM(pos_arestas_vertice + count, i);
+            escreverIntEEPROM(pgm_read_word_near(pos_arestas_vertice) + count, i);
             count++;
         }
     }
@@ -281,24 +282,25 @@ int lerIntEEPROM(int pos){
 // Copia somente uma linha do Grafo para um vetor
 void copiarGrafoLinha(int row){   
     for(int j = 0; j < tam_matrix; j++){
-        escreverIntEEPROM(pos_vetorVizinhos + j, grafo_matriz[row][j]);
+        escreverIntEEPROM(pgm_read_word_near(pos_vetorVizinhos) + j, grafo_matriz[row][j]);
     }
 }
+
 int dfs(int inicial){
     // Pilha de proximos a entrar na DFS
     int pilha[tam_matrix];
     iniciarVetor(pilha);
 
   // Vetor boolenao armazenando vertices que são possiveis ser acessados
-    iniciarVetorBoolEEPROM(pos_visitado, false);
+    iniciarVetorBoolEEPROM(pgm_read_word_near(pos_visitado), false);
     for(int i = 0; i < tam_matrix; i++){
-        escreverBoolEEPROM(pos_visitado + i, false);
+        escreverBoolEEPROM(pgm_read_word_near(pos_visitado) + i, false);
         //visitado[i] = false;
     }
 
   // A primeira vertice na DFS é o inicial passado como argumento
     empurrar(pilha, inicial);
-    escreverBoolEEPROM(pos_visitado + inicial, true);
+    escreverBoolEEPROM(pgm_read_word_near(pos_visitado) + inicial, true);
     //visitado[inicial] = true;
   
   // Realiza verificações até a pilha estar vazia
@@ -317,11 +319,11 @@ int dfs(int inicial){
       // Caso o vertice seja vizinho, (==1), e ainda não tenha sido marcado como visitado
       // O vizinho será colocado na pilha para verificar os seus proprios vizinhos e marcado como visitado
             //if(vetorVizinhos[i] == 1 && !visitado[i]){
-            if(lerIntEEPROM(pos_vetorVizinhos + i) == 1 && !lerBoolEEPROM(pos_visitado + i)){
+            if(lerIntEEPROM(pgm_read_word_near(pos_vetorVizinhos) + i) == 1 && !lerBoolEEPROM(pgm_read_word_near(pos_visitado) + i)){
                 empurrar(pilha, i);
 
                 //visitado[i] = true;
-                escreverBoolEEPROM(pos_visitado + i, true);
+                escreverBoolEEPROM(pgm_read_word_near(pos_visitado) + i, true);
             }
         }
     }
@@ -330,7 +332,7 @@ int dfs(int inicial){
     int count = 0;
     for(int i = 0; i < tam_matrix; i++){
         //if(visitado[i] == true){
-        if(lerBoolEEPROM(pos_visitado + i) == true){
+        if(lerBoolEEPROM(pgm_read_word_near(pos_visitado) + i) == true){
             count++;
         }
     }
