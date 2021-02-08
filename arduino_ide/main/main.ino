@@ -17,8 +17,15 @@
 /*
   TODO: Explicar a comunicação serial
 */
-
-
+/*
+  TODO: Explicar a estrutura de dados
+*/
+/*
+  TODO: Explicar a lógica do algoritmo
+*/
+/*
+  TODO: Trocar EEPROM.write por EEPROM.update
+*/
 
 /* Blibiotecas usados para reduzir o consumo de energia */
 #include <avr/power.h>
@@ -311,36 +318,54 @@ int countArestas(int row){
     return count;
 }
 
-// Valida a Aresta do grafo a ser utilizada
+/*
+  Realiza diversas verificações para verificar se a aresta que conecta os dois vertices pode ser utilizada
+  no caminho.
+
+  Entrada: 
+  'start' = inteiro indicando vertice de referencia,
+  'end' = inteiro indicando vertice a ser verificado,
+  'n_arestas_vertice' = inteiro indicando a quantidade de vertices que estão conectados ao vertice de referencia 
+ 
+  Saida: boleano indicando se o vertice 'end' esta conectado ao 'start' pode ser utilizado no caminho
+*/
+/*
+* Nesta função, o boleano indicara que a aresta pode ser utilizada no caminho e não se ela é uma aresta de corte
+*/
 bool ehArestaCorte(int start, int end, int n_arestas_vertice){
-  // Contabiliza a quantidade de ligações que o Vertice possui
+  /* Contador indicando a quantidade de arestas do vertice 'start' */
   int count = 0;
+  /* Contabiliza as arestas de 'start' */
   for (int i = 0; i < n_arestas_vertice; i++){ 
     if(grafo_matriz[start][i] == 1){
       count++;
     }
   }
   
-  // Caso o Vertice só possua uma Aresta é realizado uma DFS a fim de reconhecer se ele é uma "Aresta de corte"
+  /* Caso o vertice 'start' possue apenas uma aresta conectada ao vertice 'end' e nenhuma outra, é utilizada 
+  uma DFS para determinar se aquela aresta pode ser utilizada no caminho */
   if (count == 1){
-    // Salva a quantidade de Vertices acessiveis com a Aresta presente no grafo
+    /* Salva a quantidade de vertices que podem ser alcançados apartir do vertice 'end' com a aresta de 'start' para 'end'*/
     int dfs_c_aresta = dfs(end);
     
+    /* Remove a aresta da matriz */
     grafo_matriz[end][start] = 0;
     grafo_matriz[start][end] = 0;
 
-    // Salva a quantidade de Vertices acessiveis sem a Aresta presente no grafo
+    /* Salva a quantidade de vertices que podem ser alcançados apartir do vertice 'end' caso a aresta seja removida */
     int dfs_s_aresta = dfs(end);
 
+    /* Insere a aresta de volta a matriz */
     grafo_matriz[end][start] = 1;
     grafo_matriz[start][end] = 1;
 
-    // Ao comparar o resultado retornado pelas DFS's é definido se a aresta será usada.
+    /* Caso a remoção da aresta reduza o nummero de vertices acessiveis, é retornado 'false' indicado que não deve ser 
+    utilizado essa aresta, caso contrario é retornado 'true' */
     return (dfs_c_aresta > dfs_s_aresta) ? false : true;
   
-  /* Caso não seja possivel determinar via uma dfs, essa aresta sera considerada de corte se e somente se a quantidade de
-   vertices conectados seja igual a 0
-  */
+  /* Caso não seja possivel determinar via uma DFS, é retornado 'false' para se exister mais arestas conectadas, caso 
+  contrario, será retornado 'true' o que irá levar o algoritmo a entender que esse é o ultimo caminho, pois o numero de 
+  areastas conectadas ao vertice é 0 */
   }else if(count > 1){
     return false;
   }else{
@@ -349,57 +374,111 @@ bool ehArestaCorte(int start, int end, int n_arestas_vertice){
 }
 
 
+/* 
+  Inicia um vetor de inteiros na memoria EEPROM.
+  Entrada:
+  'pos' = inteiro indicando o endereco de memoria em que o vetor começa
+  'valor' = inteiro que será armazenado em todo o vetor
+*/
 void iniciarVetorIntEEPROM(int pos, int valor){
   for(int i = 0; i < tam_matrix; i++){
+    /* Escreve na posicao de memoria */
     escreverIntEEPROM(pos + i, valor);
   }
 }
+/* 
+  Inicia um vetor de boleanos na memoria EEPROM.
+  Entrada:
+  'pos' = inteiro indicando o endereco de memoria em que o vetor começa
+  'valor' = boleano que será armazenado em todo o vetor
+*/
 void iniciarVetorBoolEEPROM(int pos, bool valor){
   for(int i = 0; i < tam_matrix; i++){
+    /* Escreve na posicao de memoria */
     escreverBoolEEPROM(pos + i, valor);
   }
 }
 
+/* 
+  Escreve um boleano em dada posicão de memoria EEPROM.
+  Entrada:
+  'pos' = inteiro indicando o endereco de memoria em que sera armazenado o valor
+  'valor' = boleano que será armazenado em todo o vetor
+*/
 void escreverBoolEEPROM(int pos, bool valor){
+  /* byte com o valor a ser escrito */
   byte* p = (byte*)(void*)&valor;
-  for (int i = 0; i < sizeof(valor); i++)
-  {
+  for (int i = 0; i < sizeof(valor); i++){
+    /* chamada EEPROM para escrita */
     EEPROM.write(pos++, *p++);
   }
 }
+/* 
+  Escreve um inteiro em dada posicão de memoria EEPROM.
+  Entrada:
+  'pos' = inteiro indicando o endereco de memoria em que sera armazenado o valor
+  'valor' = inteiro que será armazenado em todo o vetor
+*/
 void escreverIntEEPROM(int pos, int valor){
+  /* byte com o valor a ser escrito */
   byte* p = (byte*)(void*)&valor;
   for (int i = 0; i < sizeof(valor); i++)
   {
+    /* chamada EEPROM para escrita */
     EEPROM.write(pos++, *p++);
   }
 }
-
+/* 
+  Realiza uma leitura em dada posicão de memoria EEPROM e retorna o valor armazenado nela.
+  Entrada:
+  'pos' = inteiro indicando o endereco de memoria em que sera realizado a leitura
+  Saida: boleano armezanado naquele endereço
+*/
 bool lerBoolEEPROM(int pos){
+  /* Variável usada para obter o tamanho do dado que será lido */
   bool valor = false;
+  /* Define um byte para armazenar o valor lido na memoria */
   byte* p = (byte*)(void*)&valor;
-  for (int i = 0; i < sizeof(valor); i++)
-  {
+
+  /* Lê o tamanho em bytes da posição de memoria e armazena no byte 'p' */
+  for (int i = 0; i < sizeof(valor); i++){
   *p++ = EEPROM.read(pos++);
   }
+  /* Retorna o valor lido */
   return valor;
 }
+/* 
+  Realiza uma leitura em dada posicão de memoria EEPROM e retorna o valor armazenado nela.
+  Entrada:
+  'pos' = inteiro indicando o endereco de memoria em que sera realizado a leitura
+  Saida: inteiro armezanado naquele endereço
+*/
 int lerIntEEPROM(int pos){
+  /* Variável usada para obter o tamanho do dado que será lido */
   int valor = 0;
+  /* Define um byte para armazenar o valor lido na memoria */
   byte* p = (byte*)(void*)&valor;
-  for (int i = 0; i < sizeof(valor); i++)
-  {
+
+  /* Lê o tamanho em bytes da posição de memoria e armazena no byte 'p' */
+  for (int i = 0; i < sizeof(valor); i++){
   *p++ = EEPROM.read(pos++);
   }
+  /* Retorna o valor lido */
   return valor;
 }
 
-// Copia somente uma linha do Grafo para um vetor
+/*
+  Realiza a copia de uma linha da matriz na memoria EEPROM
+  Entrada: inteiro indicando a linha a ser copiada
+*/
 void copiarGrafoLinha(int row){   
-    for(int j = 0; j < tam_matrix; j++){
-        escreverIntEEPROM(pgm_read_word_near(pos_vetorVizinhos) + j, grafo_matriz[row][j]);
-    }
+  /* Itera sobre toda a linha e escreve um inteiro na EEPROM no endereco de memoria do vetor de vertices vizinhas */
+  for(int j = 0; j < tam_matrix; j++){
+    escreverIntEEPROM(pgm_read_word_near(pos_vetorVizinhos) + j, grafo_matriz[row][j]);
+  }
 }
+
+
 
 int dfs(int inicial){
     // Pilha de proximos a entrar na DFS
