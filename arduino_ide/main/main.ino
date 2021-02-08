@@ -1,30 +1,78 @@
+
+/* Comentarios neste formato descrevem variaveis ou funções resumidamente */
+
+/*
+  Comentarios neste formato descrevem blocos maiores, seja uma função ou um fluxo
+
+  No caso de funções, o retorno pode ser descrito da seguinte forma:
+  Retorno: o retorno da função de forma resumida e seu tipo
+*/
+
+/*-----------------------------OBSERVAÇÃO----------------------------------
+*
+*  Comentarios neste formato serão usados para observações ou notas   
+*
+--------------------------------------------------------------------------*/
+
+/*
+  TODO: Explicar a comunicação serial
+*/
+
+
+
+/* Blibiotecas usados para reduzir o consumo de energia */
 #include <avr/power.h>
 #include <avr/sleep.h>
+/* Bibliotecas usadas para reduzir o uso de memória */
 #include <avr/pgmspace.h>
 #include <EEPROM.h>
-
+/* Quantidade de vertices máxima aceitada pela aplicação, isso resulta em TAM_MATRIX_MAX^2 bytes alocados no escopo global */
 #define TAM_MATRIX_MAX 40
+/* Quantidade minima de vertices permitida */
+#define TAM_MATRIX_MIN 1
 
-
+/* Variável que indica a quantidade de linhas X colunas que serão computadas nessa iteração, esse valor será recebido via serial 
+no inicio de cada iteração e será usado durante a computação para definir a quantidade de vertices usados */
 int tam_matrix = 0;
+/* Declaração da estrutura de dados utilizada pela aplicação */
 char grafo_matriz[TAM_MATRIX_MAX][TAM_MATRIX_MAX];
+/* Constantes utilizadas para o armazenamento de vetores na EEPROM, cada constante indica o endereço de um vetor na EEPROM */
+/* As constantes foram armazenadas em Flash como uma tentativa de reduzir o consumo de SRAM */
 const int pos_visitado PROGMEM = TAM_MATRIX_MAX + 1;
 const int pos_vetorVizinhos PROGMEM = (TAM_MATRIX_MAX * 2) + 1;
 const int pos_arestas_vertice PROGMEM = (TAM_MATRIX_MAX * 3) + 1; 
 
+
+
+/*
+  Durante o setup, definimos o baudrate das portas seriais no pino 1 e 2, e definimos um timeout de 20 segundos para a comunicação serial
+*/
 void setup(){
-  Serial.begin(9600); // Baudrate do terminal de entrada pinos 1,2
+  Serial.begin(9600);
   Serial.setTimeout(20000);
 }
 
+
+/*
+  Durante o loop, a placa aguarda a quantidade de vertices que serão computados, em seguida, recebe a matriz de adjacencia, computa os 
+  dados e por fim, coloca a placa em um modo de consumo de energia
+*/
 void loop(){
-  tamanho_mat();
+  /* Recebe a quantidade de vertices */
+  tamanho_mat(); 
+  /* Recebe a matriz de adjacencia */
   recebe_matrix();
 
+  /* Computa a matriz */
   fleury();
+  /* Entre em um modo de consumo */
   dormir();
 }
 
+
+/*
+  TODO: Escrever o fluxo do sleep e descrever resumidamente cada funcao
+*/
 void dormir(){
   delay(200);
   
@@ -56,13 +104,22 @@ void dormir(){
 }
 
 
-void tamanho_mat(){
 
+/*
+  Recebe a quantidade de vertices que irá definir o tamanho da matriz utilizado durante a computação
+*/
+void tamanho_mat(){
+  /* Trava o programa em um laço até que seja enviado um inteiro */
   while(true){
+    /* Limpa a serial para garantir que seja recebido blocos pequenos, de inteiro por inteiro */
     Serial.flush();
+    /* Caso exista bytes disponiveis para leitura */
     if (Serial.available()){
+      /* Busca o proximo inteiro valido na serial e ignora qualquer outro caractére */
       tam_matrix=Serial.parseInt(SKIP_ALL);
-      if(tam_matrix>1  && tam_matrix<=TAM_MATRIX_MAX){
+      /* Verifica se o inteiro inserido esta dentre os valores permitidos */
+      if(tam_matrix > TAM_MATRIX_MIN && tam_matrix <= TAM_MATRIX_MAX){
+        /* Envia para a serial o valor aceito e quebra o laço */
         Serial.println(tam_matrix);
         break;  
       }
@@ -70,131 +127,183 @@ void tamanho_mat(){
   }
 }
 
+/*
+  Recebe a matriz de adjacencia e armazena os elementos na matriz definida globalmente
+*/
 void recebe_matrix(){
-  for (int i=0;i<tam_matrix;i++){
-    for (int j=0;j<tam_matrix;j++){
+  /* Para cada elemento do matriz, a placa é presa em um laço aguardando o envio daquele elemento pela serial */
+  for (int i = 0; i < tam_matrix; i++){
+    for (int j = 0; j < tam_matrix; j++){
       while(true){
+        /* Limpa a serial para garantir que seja recebido blocos pequenos, de inteiro por inteiro */
         Serial.flush();
+        /* Caso exista bytes disponiveis para leitura */
         if(Serial.available()){
-          grafo_matriz[i][j]=Serial.parseInt(SKIP_ALL);
+          /* Busca o proximo inteiro valido na serial ignorando qualquer outro caractére e armazena o valor na sua posição 
+          correspondente da matriz */
+          grafo_matriz[i][j] = Serial.parseInt(SKIP_ALL);
+          /* Envia para a serial o valor armazenado e quebra o laço */
           Serial.print(grafo_matriz[i][j]-0);
           Serial.print(" ");
           break;
         }
       }
     }
+    /* Quebra de linha para melhorar a visualização */
     Serial.println();
   }
 }
 
-// Busca o vertice mais indicado para dar inicio no caminho
-// Busca um vertice com grau ímpar, caso não exista nenhum, retorna um vertice qualquer do grafo
+/*
+  Função utilizada para obter um vertice em que sejá possivel dar inicio a uma trilha euleriana
+  Retorno: um inteiro indicando a indexação de um vertice
+*/
 int buscarInicial(){
+  /* Variavel que armazena o grau de cada vertice visitado durante o calculo */
   int grau = 0;
-  for(int i=0; i < tam_matrix; i++){
+  /* Visita cada vertice 'i' da matriz ate encontrar um favoravel */
+  for(int i = 0; i < tam_matrix; i++){
+    /* Reseta a quantidade de graus para dar inicio a contagem */
     grau = 0;
+    /* Itera sobre todos os vertices conectados ao vertice 'i' e incrementa a contagem de graus caso exista aresta 
+    conectada ao vertice 'j' */
     for(int j = 0; j < tam_matrix; j++){
       if (grafo_matriz[i][j] == 1){
         grau++;
       }
     }
+    /* Após verificar todos os vertices conectados, verifica se o grau é impar e retorna esse vertice 
+    para ser utilizado*/
     if((grau % 2 ) == 1 ){
       return i;
     }
   } 
+  /* Caso não exista vertices de grau impar, retorna 0 para o algoritmo utilizar o primeiro vertice como inicial*/
   return 0;
 }
 
-// Busca um caminho ou ciclo euleriano no grafo assim como avalia algumas caracteristicas do grafo
+/*
+  Função na qual é realizada a computação e obtenção da trilha
+*/
 void fleury(){
-  int start = buscarInicial();;
-  // Contagem de vertices visitados
+  /* Obtem o vertice inicial da trilha */
+  int start = buscarInicial();
+  /* Contador de vertices, não repetidos, visitados pela trilha */
   int vertices_visitados = 0;
+  
+  /* 
+    'v' e 'start' serão utilizados no decorrer dessa função, as duas variáveis simbolizam vertices que se 
+    conectam via uma aresta e durante a computação as duas variáveis irão assumir diferentes valores obtidos 
+    durante a execução do algoritmo.
+  */
+
+  /* ------------------------------Divergência com a versão do liunux---------------------------------------
+  *  Diferente da versão implementada no linux, optamos por enviar pela Serial cada vertice do caminho durante 
+  *  a execução ao inves de armazena-las em um vetor para ser consultado posteriormente, isso fez com que a 
+  *  ultima vertice enviada pelo serial seja repetida, já que durante a execução do fluxo a seguir, a ultima 
+  *  vertice é considerada valida para a trilha e é computada e enviada para a Serial. 
+  ---------------------------------------------------------------------------------------------------------*/
+
+  /* Atribui o valor da vertice de inicio a vertice 'v' que será verificada a seguir */
   int v = start;
   
-   /* Calcula o tamanho maximo do caminho que pode ser percorrido
-  int max_caminho_size = ((size * (size-1))/2);
-  if(max_caminho_size > MAX_CAMINHO){
-    max_caminho_size = MAX_CAMINHO;
-  }
-
-  // Caminho feito no grafo a ser impresso
-  int caminho[max_caminho_size];
-  */
+  /* Envia para a serial a primeira vertice do caminho */
   Serial.print(" ");
   Serial.print(start);  
 
+  /* Incrementa o contador de vertices*/
   vertices_visitados++;
   
+  /* O algoritmo é preso em um laço, sua condição de saída é garantida para caso uma vertice possua 0 arestas, 
+  indicando que o caminho chegou ao fim */
   while(true){
 
-    // Quantidade de arestas naquele vertice
+    /* Número de arestas do vertice que está sendo verificado */
     int n_arestas_vertice = 0;
+    /* countArestas é responval por calcular o número de arestas de 'start' e armazena-las na EEPROM da placa */
     n_arestas_vertice = countArestas(start);
 
-    // Itera sobre as arestas
+    /* A variável 'i' é utilizada para iterar sobre as arestas do vertice e será usada para verificar se foi 
+    possivel encontrar uma vertice valida para o caminho */
     int i;
     for (i = 0; i < n_arestas_vertice; i++){
-    // V recebe a Aresta 
+    /* 'v' recebe da EEPROM o valor da aresta */
     v = lerIntEEPROM(pgm_read_word_near(pos_arestas_vertice) + i);
     
-      // Verfica se a posição no Grafo é valida e se a Aresta não é de corte
+      
+      /* Verifica se no par [start][v] existe aresta e se essa aresta, caso exista, é uma aresta de corte e 
+      pode ser usada no caminho */
       if (grafo_matriz[start][v] == 1 && ehArestaCorte(start, v, n_arestas_vertice)){
-        // Caso a Aresta seja validada ela é removida do Grafo
+        /* A aresta é removida da matriz de adjancecia para nao ser utilizada nas proximas iteracoes */
         grafo_matriz[start][v] = 0;
         grafo_matriz[v][start] = 0;
     
-        // O ponto final da Aresta é se torna o ponto inicial para as proximas verificações
+        /* O vertice visitada, agora passa a ser o próximo vertice utilizada como referencia de inicio para 
+        a verificação do caminho */
         start = v;  
 
-        // Guarda o Vertice para printar caminho
+        /* Envia o caminho obtido pela Serial e incrementa o contador de vertices vistados no grafo */
         Serial.print(" ");
         Serial.print(start);
         vertices_visitados++;
+
+        /* Quebra o laço interno 'for' para ser iterado a próxima etapa do caminho */
         break;
       }
     }
   
-    // Caso o Vertice não seja validado anteriormente é escolha a ultima Aresta
+    /* Caso não seja obtido um vertice valido, o algoritmo escolhe a ultima aresta verificada como caminho 
+    escolhido */
     if(i >= n_arestas_vertice){
-        // Remove a Aresta do Grafo
+        /* A aresta é removida da matriz de adjancecia para nao ser utilizada nas proximas iteracoes */
         grafo_matriz[start][v] = 0;
         grafo_matriz[v][start] = 0; 
     
-        // O ponto final da Aresta é se torna o ponto inicial para as proximas verificações
+        /* O vertice visitada, agora passa a ser o próximo vertice utilizada como referencia de inicio para 
+        a verificação do caminho */
         start = v;
     
-        // Guarda o Vertice para printar caminho
+        /* Envia o caminho obtido pela Serial e incrementa o contador de vertices vistados no grafo */
         Serial.print(" ");
         Serial.print(start);
         vertices_visitados++;
     }
 
-    // Caso de saida uma Vertice que não possui Arestas
+    /* Caso de saida do laço 'while', se o vertice visitado não possui nenhuma aresta conectada, 
+    é decrementado o contador e o laço é quebrado */
     if(n_arestas_vertice == 0){
-      // Remove pois visita a si mesmo garantindo ser o ultimo ponto
+      /* O vertice é decrementado, pois esse caso de quebra indica que o vertice visitou a si mesmo */
       vertices_visitados--; 
       break;
     }
   }
 
-  // Printa o Grafo após percorer todos os caminhos validos
-  //printGrafo(size);
-
-  // Um Grafo contem um caminho Euleriano se somente se ele percore todas as arestas contidas nele.
+  /* Segundo o algoritmo, para verificarmos se a trilha obtida é valida, verificamos se todos as 
+  arestas do grafo foram visitadas e destruidas */
   if (qtdArestas() > 0){
+    /* Retorna a Serial uma mensagem informando que não possui caminho */
     Serial.println();
     Serial.println("Grafo nao contem caminho Fleuriano");
   }
+  /* Retorna o grafo apos a execução do algoritmo, com ou sem arestas destruidas */
   printGrafo();
   Serial.println(" ");
 }
 
-// Retorna a quantidade de arestas de um vertice e salva essas vertices em um vetor 
+/*
+  Obtem o numero de arestas conectadas a dado vertice e armazena esses vertices na EEPROM para serem
+  lidos pelo algoritmo
+  Entrada: inteiro indicando o vertice que será usado como referência
+  Retorno: inteiro indicando a quantidade de arestas conectadas aquele vertice
+*/
 int countArestas(int row){
+    /* Contador de vertices adjacentes */
     int count = 0;
+    /* Itera sobre todos os vertices da matriz e verifica se cada um deles possui uma aresta conectada com
+    o vertice de referencia */
     for(int i = 0; i < tam_matrix; i++){
         if(grafo_matriz[row][i] == 1){
+            /* Caso exista aresta, é salvo o valor na EEPROM e o contador é incrementado */
             escreverIntEEPROM(pgm_read_word_near(pos_arestas_vertice) + count, i);
             count++;
         }
