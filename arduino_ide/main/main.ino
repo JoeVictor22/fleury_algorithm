@@ -30,10 +30,13 @@
   TODO: Trocar EEPROM.write por EEPROM.update
 */
 /*
-  TODO: Continuar apartir da DFS
+  TODO: Armazenar println na PROGMEM
+*/
+/*
+  TODO: remover um dos inicios da vetor EEPROM pos_visitado na linha 513 e testar
 */
 
-/* Blibiotecas usados para reduzir o consumo de energia */
+/* Blibiotecas usadas para tentar reduzir o consumo de energia */
 #include <avr/power.h>
 #include <avr/sleep.h>
 /* Bibliotecas usadas para reduzir o uso de memória */
@@ -55,8 +58,6 @@ const int pos_visitado PROGMEM = TAM_MATRIX_MAX + 1;
 const int pos_vetorVizinhos PROGMEM = (TAM_MATRIX_MAX * 2) + 1;
 const int pos_arestas_vertice PROGMEM = (TAM_MATRIX_MAX * 3) + 1; 
 
-
-
 /*
   Durante o setup, definimos o baudrate das portas seriais no pino 1 e 2, e definimos um timeout de 20 segundos para a comunicação serial
 */
@@ -64,7 +65,6 @@ void setup(){
   Serial.begin(9600);
   Serial.setTimeout(20000);
 }
-
 
 /*
   Durante o loop, a placa aguarda a quantidade de vertices que serão computados, em seguida, recebe a matriz de adjacencia, computa os 
@@ -75,7 +75,6 @@ void loop(){
   tamanho_mat(); 
   /* Recebe a matriz de adjacencia */
   recebe_matrix();
-
   /* Computa a matriz */
   fleury();
   /* Entre em um modo de consumo */
@@ -243,7 +242,6 @@ void fleury(){
     /* 'v' recebe da EEPROM o valor da aresta */
     v = lerIntEEPROM(pgm_read_word_near(pos_arestas_vertice) + i);
     
-      
       /* Verifica se no par [start][v] existe aresta e se essa aresta, caso exista, é uma aresta de corte e 
       pode ser usada no caminho */
       if (grafo_matriz[start][v] == 1 && ehArestaCorte(start, v, n_arestas_vertice)){
@@ -336,7 +334,7 @@ int countArestas(int row){
   Saida: boleano indicando se o vertice 'end' esta conectado ao 'start' pode ser utilizado no caminho
 */
 /*
-* Nesta função, o boleano indicara que a aresta pode ser utilizada no caminho e não se ela é uma aresta de corte
+* Nesta função, o boleano irá indicar que a aresta pode ser utilizada no caminho e não se ela é uma aresta de corte
 */
 bool ehArestaCorte(int start, int end, int n_arestas_vertice){
   /* Contador indicando a quantidade de arestas do vertice 'start' */
@@ -379,7 +377,6 @@ bool ehArestaCorte(int start, int end, int n_arestas_vertice){
   }
 }
 
-
 /* 
   Inicia um vetor de inteiros na memoria EEPROM.
   Entrada:
@@ -392,6 +389,7 @@ void iniciarVetorIntEEPROM(int pos, int valor){
     escreverIntEEPROM(pos + i, valor);
   }
 }
+
 /* 
   Inicia um vetor de boleanos na memoria EEPROM.
   Entrada:
@@ -419,6 +417,7 @@ void escreverBoolEEPROM(int pos, bool valor){
     EEPROM.write(pos++, *p++);
   }
 }
+
 /* 
   Escreve um inteiro em dada posicão de memoria EEPROM.
   Entrada:
@@ -434,6 +433,7 @@ void escreverIntEEPROM(int pos, int valor){
     EEPROM.write(pos++, *p++);
   }
 }
+
 /* 
   Realiza uma leitura em dada posicão de memoria EEPROM e retorna o valor armazenado nela.
   Entrada:
@@ -453,6 +453,7 @@ bool lerBoolEEPROM(int pos){
   /* Retorna o valor lido */
   return valor;
 }
+
 /* 
   Realiza uma leitura em dada posicão de memoria EEPROM e retorna o valor armazenado nela.
   Entrada:
@@ -484,73 +485,96 @@ void copiarGrafoLinha(int row){
   }
 }
 
-
-
+/*
+  Realiza uma busca em profundidade iterativa em uma estrutura de pilha
+  Entrada: inteiro indicando o vertice de partida
+  Saida: um inteiro que diz quantos vertices são acessiveis
+*/
 int dfs(int inicial){
-    // Pilha de proximos a entrar na DFS
+
+    /* 
+      Para realizar uma busca em profundidade de forma iterativa, declaramos uma pilha de inteiros 
+      que ira guardar o index de cada vertice a ser visitado, um vetor de boleanos que indica os vertices 
+      visitados e um vetor de inteiros com os vertices vizinhos ao vertice referencia 'inicial'.
+      Os vetores de vertice visitados e o de vertices vizinhos, foi armazenado na memoria EEPROM.
+      A DFS consiste em calcular quantos vertices podem ser acessados a partir do vetor inicial.
+    */
+
+    /* Pilha de execução, que irá somente ter a função de indicar quais vertices devem ser analisados*/
     int pilha[tam_matrix];
+    /* Inicia o vetor da pilha com o valor '-1' em todas as suas posições, indicando que não existe 
+    elementos na pilha que devem ser executados */
     iniciarVetor(pilha);
 
-  // Vetor boolenao armazenando vertices que são possiveis ser acessados
+    /* Inicia o vetor boleano de vertices visitados com o valor 'false'. Cada index representa um vertice
+    e o valor armazenado nele diz se esse vertice foi ou nao verificado durante a DFS */
     iniciarVetorBoolEEPROM(pgm_read_word_near(pos_visitado), false);
     for(int i = 0; i < tam_matrix; i++){
         escreverBoolEEPROM(pgm_read_word_near(pos_visitado) + i, false);
-        //visitado[i] = false;
     }
 
-  // A primeira vertice na DFS é o inicial passado como argumento
+    /* O vertice 'inicial' enviado para a função é inserido na pilha de execução e é marcado true
+    em seu index no vetor de vertices visitadas */
     empurrar(pilha, inicial);
     escreverBoolEEPROM(pgm_read_word_near(pos_visitado) + inicial, true);
-    //visitado[inicial] = true;
   
-  // Realiza verificações até a pilha estar vazia
+    /* Aqui damos inicio a execução dos elementos da pilha, a condição de parada será quando a pilha 
+    de execução estiver vazia */
     while(!ehVazio(pilha)){ 
         
-    // Vertice é a vertice onde ira ser feito a DFS
-        int vertice;
-        vertice = sacar(pilha);
-        
-        // Recebe um vetor que é a linha da Matriz correspondente ao Vertice a ser feita a DFS
-        //int vetorVizinhos[size];
-        copiarGrafoLinha(vertice);
-        
-    // "i" itera sobre o vetor e marca os vizinhos ao Vertice utilizado
-        for(int i=0; i < tam_matrix; i++){
-      // Caso o vertice seja vizinho, (==1), e ainda não tenha sido marcado como visitado
-      // O vizinho será colocado na pilha para verificar os seus proprios vizinhos e marcado como visitado
-            //if(vetorVizinhos[i] == 1 && !visitado[i]){
-            if(lerIntEEPROM(pgm_read_word_near(pos_vetorVizinhos) + i) == 1 && !lerBoolEEPROM(pgm_read_word_near(pos_visitado) + i)){
-                empurrar(pilha, i);
-
-                //visitado[i] = true;
-                escreverBoolEEPROM(pgm_read_word_near(pos_visitado) + i, true);
-            }
+      /* Variável que representa a vertice que será analisada. A escolha dessa vertice depende do ultimo 
+      elemento que se encontra na pilha de execução*/
+      int vertice;
+      vertice = sacar(pilha);
+      
+      /* Salva na EEPROM a linha do grafo correspondente a vertice que está sendo analisada, isso significa
+      que o vetor salvo na EEPROM irá possuir todas as arestas conectadas a esse vertice */
+      copiarGrafoLinha(vertice);
+      
+      /* Itera sobre todos as vertices do grafo */
+      for(int i = 0; i < tam_matrix; i++){
+        /* Caso o vertice iterado no 'for' seja vizinho e não tenha sido visitado durante a DFS */
+        if(lerIntEEPROM(pgm_read_word_near(pos_vetorVizinhos) + i) == 1 && !lerBoolEEPROM(pgm_read_word_near(pos_visitado) + i)){
+            /* Insere o vertice não visitado na pilha de execução e escreve no vetor de vertices visitados 
+            o valor 'true', indicando que este vertice ja foi visitado */
+            empurrar(pilha, i);
+            escreverBoolEEPROM(pgm_read_word_near(pos_visitado) + i, true);
         }
+      }
     }
 
-  // Realiza uma contagem de quantos vertices é possivel atingir a partir do inicial
+    /*
+      Por fim, apos verificar todos os vertices que podem ser visitados apartir do vertice 'inicial', 
+      realiza a contagem da quantidade de verticies que foram visitados e incrementa um contador
+    */
     int count = 0;
     for(int i = 0; i < tam_matrix; i++){
-        //if(visitado[i] == true){
-        if(lerBoolEEPROM(pgm_read_word_near(pos_visitado) + i) == true){
-            count++;
-        }
+      if(lerBoolEEPROM(pgm_read_word_near(pos_visitado) + i) == true){
+          count++;
+      }
     }
 
-  // Retornar a contagem para comparações
+    /* Retorna o contador de vertices visitados */
     return count;
 }
 
-
-/*--------------------------------------------PILHA-------------------------------------------------------*/
+/*
+  Inicia a pilha de execução da DFS com o valor -1, indicando que não existe elemento em todos 
+  as posicoes.
+  Entrada: um ponteiro para o vetor de inteiros da pilha
+*/
 void iniciarVetor(int *vector){
     for(int i=0; i < tam_matrix;i++){
         vector[i] = -1;
     }
 }
 
-// Verifica se a pilha esta preenchida com somente valores -1
-// Caso verdade a pilha se encontra vazia, retorna TRUE.
+/*
+  Verifica se um vetor de pilha se encontra vazio. Cada elemento é considerado vazio se o valor
+  '-1' estiver armazenado em sua posição.
+  Entrada: um ponteiro para o vetor de inteiros da pilha
+  Saida: um boleano indicando se a pilha esta ou nao vazia
+*/
 bool ehVazio(int *pilha){
     for(int i=0; i < tam_matrix; i++){
         if(pilha[i] != -1){
@@ -560,33 +584,65 @@ bool ehVazio(int *pilha){
     return true;
 }
 
-// Insere um valor no topo da pilha
+/*
+  Realiza um push() na pilha, inserindo o valor desejado no topo da pilha.
+  Entrada: 
+  'pilha'= um ponteiro para o vetor de inteiros da pilha
+  'value' = valor a ser armazenado no topo da pilha
+*/
 void empurrar(int *pilha, int value){
-    int i;
-    for(i = 0; i < tam_matrix; i++){
-        if(pilha[i] == -1){
-            break;
-        }
-    }
-    pilha[i] = value;
+  /* Itera sobre a pilha ate encontrar um elemento vazio, com '-1' armazenado */
+  int i;
+  for(i = 0; i < tam_matrix; i++){
+      if(pilha[i] == -1){
+          break;
+      }
+  }
+  /* Salva no topo da pilha o valor recebido */
+  pilha[i] = value;
 }
 
-// Saca o valor que se encontra no topo da pilha
+/*
+  Equivalente ao pop(), remove o elemento do topo da pilha.
+  Entrada: um ponteiro para o vetor de inteiros da pilha
+  Saida: um inteiro que é o elemento do topo da pilha
+*/
 int sacar(int *pilha){
+    /* Itera sobre a pilha ate encontrar um elemento vazio, com '-1' armazenado */
     int i;
     for(i=0; i < tam_matrix; i++){
         if(pilha[i] == -1){
             break;
         }    
     }
+    /* Armazena o valor no topo em uma variavel auxiliar, defini a posicao desse valor como vazia 
+    e retorno a variavel auxiliar */
     int aux = pilha[i-1];
     pilha[i-1] = -1;
     return aux;
 }
 
-/*--------------------------------------------------------------------------------------------------------*/
+/*
+  Calcula a quantidade de arestas presentes na matriz de adjacencia.
+  Como o valor armazenado é equivalente a '1' ou a '0', e a matriz de adjacencia espelha 
+  a parte inferior da matriz, basta somar todos os elementos da parte acima da diagonal
+  Saida: um inteiro representando a quantidade de arestas presentes no grafo  
+*/
+int qtdArestas(){
+  int arestas=0;
+  /* O motive de 'j' iniciar em 'i', é para os elementos acessados, serem os da parte superior
+  da matriz */
+  for (int i = 0; i < tam_matrix; i++){
+    for (int j = i; j < tam_matrix; j++){
+      arestas+=grafo_matriz[i][j];
+    }
+  }
+  return arestas;
+}
 
-// Printa o Grafo em sua integridade
+/*
+  Utilitario para enviar pela Serial todos os elementos escritos na matriz
+*/
 void printGrafo(){
     Serial.println();
     for( int i =0 ; i < tam_matrix; i++){
@@ -596,15 +652,4 @@ void printGrafo(){
         }
         Serial.println();
     }
-}
-
-// Calcula a quantidade de arestas presentes no grafo
-int qtdArestas(){
-  int arestas=0;
-  for (int i=0;i<tam_matrix;i++){
-    for (int j=i;j<tam_matrix;j++){
-      arestas+=grafo_matriz[i][j];
-    }
-  }
-  return arestas;
 }
