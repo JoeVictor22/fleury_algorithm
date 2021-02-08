@@ -17,15 +17,56 @@
 *
 --------------------------------------------------------------------------*/
 
+/*-----------------------------LICENSE--------------------------------------
+* Implementação Iterativa do algoritimo de Fleury com busca em profundidade
+* para a plataforma Arduino UNO
+* Copyright © 2021 by Joel Victor Castro Galvão, Raynan Serafim de Souza
+* Permission is hereby granted, free of charge, to any person obtaining a copy
+* of this software and associated documentation files (the "Software"), to deal
+* in the Software without restriction, including without limitation the rights
+* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell 
+* copies of the Software, and to permit persons to whom the Software is 
+* furnished to do so, subject to the following conditions:
+* The above copyright notice and this permission notice shall be included in all 
+* copies or substantial portions of the Software.
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+* INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A 
+* PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+* HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+* OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+--------------------------------------------------------------------------*/
+
+
 /*
   TODO: Explicar a comunicação serial
 */
-/*
-  TODO: Explicar a estrutura de dados
-*/
-/*
-  TODO: Explicar a lógica do algoritmo
-*/
+
+/*----------------------ESTRUTURA DE DADOS----------------------------------
+* O programa consiste em uma matriz de adjacencia de tamanho TAM_MATRIX_MAX^2,
+* que representa o grafo e suas arestas.
+* Foi implementado uma estrutura de pilha que trabalha especificamente para a
+* resolução do algoritmo.
+* Dentre as variáveis locais, optamos por definir alguns vetores dentro da 
+* memória EEPROM e constantes na Flash.     
+--------------------------------------------------------------------------*/
+
+/*-----------------------------LÓGICA--------------------------------------
+* O programa consiste no recebimento de um inteiro que representa o número de
+* vertices e será usado para definir a quantidade de elementos armazenados
+* na matriz de adjacencia. Após receber esse inteiro, o programa aguarda o
+* recebimento dos N x N elementos da matriz e então inicia a computação.
+* Já o algoritmo, consiste em visitar todos os vertices do grafo, verificar 
+* quais arestas conectadas não são arestas de corte, e transversar o grafo
+* utilizando apenas essas arestas que não irão gerar perda de vertices.
+* Durante a execução, os vertices visitados pelo algoritmo serão enviados
+* via serial para uma interface conectada.
+* Caso não seja possivel obter uma trilha euleriana, o algoritmo ira enviar
+* via serial uma mensagem de erro.
+* Após a execução do ciclo descrito, o programa coloca a placa em um modo
+* IDLE, para reduzir o consumo de energia. Para tirar a placa desse estado
+* e recomeçar a execução, basta enviar '-1' como sinal de WAKE.  
+--------------------------------------------------------------------------*/
 /*
   TODO: Trocar EEPROM.write por EEPROM.update
 */
