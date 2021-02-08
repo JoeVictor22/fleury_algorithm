@@ -5,7 +5,10 @@
   Comentarios neste formato descrevem blocos maiores, seja uma função ou um fluxo
 
   No caso de funções, o retorno pode ser descrito da seguinte forma:
-  Retorno: o retorno da função de forma resumida e seu tipo
+  Entrada: 
+  'var1' = definicao da variavel
+  'var2' = definicao da variavel
+  Saida: o retorno da função de forma resumida e seu tipo
 */
 
 /*-----------------------------OBSERVAÇÃO----------------------------------
@@ -25,6 +28,9 @@
 */
 /*
   TODO: Trocar EEPROM.write por EEPROM.update
+*/
+/*
+  TODO: Continuar apartir da DFS
 */
 
 /* Blibiotecas usados para reduzir o consumo de energia */
@@ -163,7 +169,7 @@ void recebe_matrix(){
 
 /*
   Função utilizada para obter um vertice em que sejá possivel dar inicio a uma trilha euleriana
-  Retorno: um inteiro indicando a indexação de um vertice
+  Saida: um inteiro indicando a indexação de um vertice
 */
 int buscarInicial(){
   /* Variavel que armazena o grau de cada vertice visitado durante o calculo */
@@ -301,7 +307,7 @@ void fleury(){
   Obtem o numero de arestas conectadas a dado vertice e armazena esses vertices na EEPROM para serem
   lidos pelo algoritmo
   Entrada: inteiro indicando o vertice que será usado como referência
-  Retorno: inteiro indicando a quantidade de arestas conectadas aquele vertice
+  Saida: inteiro indicando a quantidade de arestas conectadas aquele vertice
 */
 int countArestas(int row){
     /* Contador de vertices adjacentes */
