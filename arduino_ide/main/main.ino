@@ -17,6 +17,8 @@
 *
 --------------------------------------------------------------------------*/
 
+
+
 /*-----------------------------LICENSE--------------------------------------
 * Implementação Iterativa do algoritimo de Fleury com busca em profundidade
 * para a plataforma Arduino UNO
@@ -37,14 +39,40 @@
 * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 --------------------------------------------------------------------------*/
 
-
-/*
-  TODO: Explicar a comunicação serial
-*/
+/*----------------------------CONSIDERAÇÕES------------------------------------
+* O programa foi desenvolvido no contexto de um trabalho academico, com o 
+* intuito de implementar o algoritmo de fleury em uma plataforma com limitações
+* de hardware.
+* O arduino UNO atmega328p foi a plataforma alvo de nosso programa, durante o
+* desenvolvimento da aplicação, foram utilizados o proteus, o SimulIDE e uma
+* placa arduino fisíca para a validação e testes do programa.
+* Funções e constantes foram definidas em camelCase e variáveis em snake_case.
+* Para a implementação do algoritmo, utilizamos as seguintes fontes como 
+* referéncia.
+*   - https://www.inf.ufsc.br/grafos/temas/euleriano/euleriano.htm
+*   - http://www.gpec.ucdb.br/pistori/disciplinas/discreta/aulas/geulham.htm
+*   - https://www.youtube.com/watch?v=mRvt5yJTw7E
+*   - http://tmrfindia.org/sutra/v2i21.pdf
+*   - https://www.geeksforgeeks.org/eulerian-path-and-circuit/
+*   - https://www.tutorialspoint.com/fleury-s-algorithm-for-printing-eulerian-path-or-circuit-in-cplusplus
+*   - https://www.tutorialspoint.com/Fleury-s-Algorithm
+*   - https://www.geeksforgeeks.org/implementation-of-bfs-using-adjacency-matrix/
+* Para o port da aplicação no arduino, consultamos as seguintes fontes e 
+* códigos exemplo durante o desenvolvimento
+*   - http://www.nongnu.org/avr-libc/user-manual/power_8h.html
+*   - http://www.nongnu.org/avr-libc/user-manual/sleep_8h.html
+*   - https://www.electroniclinic.com/arduino-sleep-modes-automatic-and-manual-to-save-power-arduino-deep-sleep/
+*   - https://www.arduino.cc/reference/en/
+*   - https://create.arduino.cc/projecthub/john-bradnam/reducing-your-memory-usage-26ca05
+--------------------------------------------------------------------------*/
 
 /*----------------------ESTRUTURA DE DADOS----------------------------------
 * O programa consiste em uma matriz de adjacencia de tamanho TAM_MATRIX_MAX^2,
 * que representa o grafo e suas arestas.
+* O programa utilza cerca de 87% dos 2KB de SRAM, sobrando cerca de 256 bytes
+* para variáveis locais. É esperado que a maior pilha de memoria que variaveis
+* locais irão precisar será de cerca de 140 bytes, devido a um vetor de inteiros
+* detamanho TAM_MATRIX_MAX e alguns contadores e iteradores.
 * Foi implementado uma estrutura de pilha que trabalha especificamente para a
 * resolução do algoritmo.
 * Dentre as variáveis locais, optamos por definir alguns vetores dentro da 
@@ -67,15 +95,6 @@
 * IDLE, para reduzir o consumo de energia. Para tirar a placa desse estado
 * e recomeçar a execução, basta enviar '-1' como sinal de WAKE.  
 --------------------------------------------------------------------------*/
-/*
-  TODO: Trocar EEPROM.write por EEPROM.update
-*/
-/*
-  TODO: Armazenar println na PROGMEM
-*/
-/*
-  TODO: remover um dos inicios da vetor EEPROM pos_visitado na linha 513 e testar
-*/
 
 /* Blibiotecas usadas para tentar reduzir o consumo de energia */
 #include <avr/power.h>
@@ -95,9 +114,13 @@ int tam_matrix = 0;
 char grafo_matriz[TAM_MATRIX_MAX][TAM_MATRIX_MAX];
 /* Constantes utilizadas para o armazenamento de vetores na EEPROM, cada constante indica o endereço de um vetor na EEPROM */
 /* As constantes foram armazenadas em Flash como uma tentativa de reduzir o consumo de SRAM */
-const int pos_visitado PROGMEM = TAM_MATRIX_MAX + 1;
-const int pos_vetorVizinhos PROGMEM = (TAM_MATRIX_MAX * 2) + 1;
-const int pos_arestas_vertice PROGMEM = (TAM_MATRIX_MAX * 3) + 1; 
+const int POS_VISITADO PROGMEM = TAM_MATRIX_MAX + 1;
+const int POS_VETOR_VIZINHOS PROGMEM = (TAM_MATRIX_MAX * 2) + 1;
+const int POS_ARESTAS_VERTICE PROGMEM = (TAM_MATRIX_MAX * 3) + 1; 
+/* Mensagem para caso não seja possivel gerar uma trilha euleriana, armazenada em Flash */
+const char NOT_EULER[] PROGMEM = {"Grafo não possui caminho Fleuriano!\n"};
+
+
 
 /*
   Durante o setup, definimos o baudrate das portas seriais no pino 1 e 2, e definimos um timeout de 20 segundos para a comunicação serial
@@ -113,9 +136,9 @@ void setup(){
 */
 void loop(){
   /* Recebe a quantidade de vertices */
-  tamanho_mat(); 
+  tamanhoMat(); 
   /* Recebe a matriz de adjacencia */
-  recebe_matrix();
+  recebeMatriz();
   /* Computa a matriz */
   fleury();
   /* Entre em um modo de consumo */
@@ -124,33 +147,38 @@ void loop(){
 
 
 /*
-  TODO: Escrever o fluxo do sleep e descrever resumidamente cada funcao
+  Coloca a placa em um modo de sleep em IDLE numa tentativa de reduzir o consumo de energia
 */
 void dormir(){
   delay(200);
-  
-  set_sleep_mode(SLEEP_MODE_IDLE); // sleep mode is set here
-  sleep_enable(); // enables the sleep bit in the mcucr register
-  // so sleep is possible. just a safety pin
-  power_adc_disable();
-  power_spi_disable();
-  power_timer0_disable();
-  power_timer1_disable();
-  power_timer2_disable();
-  power_twi_disable();
-  sleep_cpu();
-  sleep_mode(); // here the device is actually put to sleep!!
-  
+  /* Seta o tipo de sleep a ser realizado */
+  set_sleep_mode(SLEEP_MODE_IDLE); 
+  /* Permite o sleep */
+  sleep_enable(); 
+  /* Desativa o ADC(Analog to Digital converter) presente na atmega */
+  power_adc_disable(); 
+  /* Desativa o SPI(Serial Peripheral Interface) presente na atmega */
+  power_spi_disable(); 
+  /* Desativa o TIMER0(8-bit timer) presente na atmega */
+  power_timer0_disable(); 
+  /* Desativa o TIMER1(16-bit timer) presente na atmega */
+  power_timer1_disable(); 
+  /* Desativa o TIMER2(8-bit timer) presente na atmega */
+  power_timer2_disable(); 
+  /* Desativa o TWI(two-wire interface) presente na atmega */
+  power_twi_disable(); 
+  /* Ativa o sleep */
+  sleep_mode(); 
+
+
   while(true){
     if(Serial.available()){
-      int wakeup_call=Serial.parseInt(SKIP_ALL);
-      if(wakeup_call==-1){
-        // THE PROGRAM CONTINUES FROM HERE AFTER WAKING UP
-        sleep_disable(); // first thing after waking from sleep:
-        // disable sleep...
-
-        power_all_enable();
-        break;
+      /* Acorda quando recebe -1 na serial */
+      if(Serial.parseInt(SKIP_ALL)==-1){
+        /* Desativa o sleep, Reativa todas as partes desativadas antes do sleep e quebra o laço */
+        sleep_disable(); 
+        power_all_enable(); 
+        break; 
       }
     }
   }
@@ -161,7 +189,7 @@ void dormir(){
 /*
   Recebe a quantidade de vertices que irá definir o tamanho da matriz utilizado durante a computação
 */
-void tamanho_mat(){
+void tamanhoMat(){
   /* Trava o programa em um laço até que seja enviado um inteiro */
   while(true){
     /* Limpa a serial para garantir que seja recebido blocos pequenos, de inteiro por inteiro */
@@ -183,7 +211,7 @@ void tamanho_mat(){
 /*
   Recebe a matriz de adjacencia e armazena os elementos na matriz definida globalmente
 */
-void recebe_matrix(){
+void recebeMatriz(){
   /* Para cada elemento do matriz, a placa é presa em um laço aguardando o envio daquele elemento pela serial */
   for (int i = 0; i < tam_matrix; i++){
     for (int j = 0; j < tam_matrix; j++){
@@ -192,13 +220,17 @@ void recebe_matrix(){
         Serial.flush();
         /* Caso exista bytes disponiveis para leitura */
         if(Serial.available()){
-          /* Busca o proximo inteiro valido na serial ignorando qualquer outro caractére e armazena o valor na sua posição 
-          correspondente da matriz */
-          grafo_matriz[i][j] = Serial.parseInt(SKIP_ALL);
-          /* Envia para a serial o valor armazenado e quebra o laço */
-          Serial.print(grafo_matriz[i][j]-0);
-          Serial.print(" ");
-          break;
+          /* Busca o proximo inteiro valido na serial ignorando qualquer outro caractér, valida o valor e armazena o
+          valor na sua posição correspondente da matriz */
+          int aux = Serial.parseInt(SKIP_ALL);
+          if( aux == 1 || aux == 0){
+            grafo_matriz[i][j] = aux;
+            /* Envia para a serial o valor armazenado e quebra o laço */
+            Serial.print(grafo_matriz[i][j] - 0);
+            Serial.print(" ");
+            break;
+          }
+
         }
       }
     }
@@ -281,11 +313,11 @@ void fleury(){
     int i;
     for (i = 0; i < n_arestas_vertice; i++){
     /* 'v' recebe da EEPROM o valor da aresta */
-    v = lerIntEEPROM(pgm_read_word_near(pos_arestas_vertice) + i);
+    v = lerIntEEPROM(pgm_read_word_near(POS_ARESTAS_VERTICE) + i);
     
       /* Verifica se no par [start][v] existe aresta e se essa aresta, caso exista, é uma aresta de corte e 
       pode ser usada no caminho */
-      if (grafo_matriz[start][v] == 1 && ehArestaCorte(start, v, n_arestas_vertice)){
+      if (grafo_matriz[start][v] == 1 && ehCaminhoValido(start, v, n_arestas_vertice)){
         /* A aresta é removida da matriz de adjancecia para nao ser utilizada nas proximas iteracoes */
         grafo_matriz[start][v] = 0;
         grafo_matriz[v][start] = 0;
@@ -335,7 +367,12 @@ void fleury(){
   if (qtdArestas() > 0){
     /* Retorna a Serial uma mensagem informando que não possui caminho */
     Serial.println();
-    Serial.println("Grafo nao contem caminho Fleuriano");
+    /* Lê byte por byte a mensagem de saida armazenada na Flash */
+    for (byte k = 0; k < strlen_P(NOT_EULER); k++) {
+      Serial.print(pgm_read_byte_near(NOT_EULER + k));
+    }
+
+
   }
   /* Retorna o grafo apos a execução do algoritmo, com ou sem arestas destruidas */
   printGrafo();
@@ -356,7 +393,7 @@ int countArestas(int row){
     for(int i = 0; i < tam_matrix; i++){
         if(grafo_matriz[row][i] == 1){
             /* Caso exista aresta, é salvo o valor na EEPROM e o contador é incrementado */
-            escreverIntEEPROM(pgm_read_word_near(pos_arestas_vertice) + count, i);
+            escreverIntEEPROM(pgm_read_word_near(POS_ARESTAS_VERTICE) + count, i);
             count++;
         }
     }
@@ -377,7 +414,7 @@ int countArestas(int row){
 /*
 * Nesta função, o boleano irá indicar que a aresta pode ser utilizada no caminho e não se ela é uma aresta de corte
 */
-bool ehArestaCorte(int start, int end, int n_arestas_vertice){
+bool ehCaminhoValido(int start, int end, int n_arestas_vertice){
   /* Contador indicando a quantidade de arestas do vertice 'start' */
   int count = 0;
   /* Contabiliza as arestas de 'start' */
@@ -455,7 +492,7 @@ void escreverBoolEEPROM(int pos, bool valor){
   byte* p = (byte*)(void*)&valor;
   for (int i = 0; i < sizeof(valor); i++){
     /* chamada EEPROM para escrita */
-    EEPROM.write(pos++, *p++);
+    EEPROM.update(pos++, *p++);
   }
 }
 
@@ -471,7 +508,7 @@ void escreverIntEEPROM(int pos, int valor){
   for (int i = 0; i < sizeof(valor); i++)
   {
     /* chamada EEPROM para escrita */
-    EEPROM.write(pos++, *p++);
+    EEPROM.update(pos++, *p++);
   }
 }
 
@@ -522,7 +559,7 @@ int lerIntEEPROM(int pos){
 void copiarGrafoLinha(int row){   
   /* Itera sobre toda a linha e escreve um inteiro na EEPROM no endereco de memoria do vetor de vertices vizinhas */
   for(int j = 0; j < tam_matrix; j++){
-    escreverIntEEPROM(pgm_read_word_near(pos_vetorVizinhos) + j, grafo_matriz[row][j]);
+    escreverIntEEPROM(pgm_read_word_near(POS_VETOR_VIZINHOS) + j, grafo_matriz[row][j]);
   }
 }
 
@@ -549,15 +586,12 @@ int dfs(int inicial){
 
     /* Inicia o vetor boleano de vertices visitados com o valor 'false'. Cada index representa um vertice
     e o valor armazenado nele diz se esse vertice foi ou nao verificado durante a DFS */
-    iniciarVetorBoolEEPROM(pgm_read_word_near(pos_visitado), false);
-    for(int i = 0; i < tam_matrix; i++){
-        escreverBoolEEPROM(pgm_read_word_near(pos_visitado) + i, false);
-    }
+    iniciarVetorBoolEEPROM(pgm_read_word_near(POS_VISITADO), false);
 
     /* O vertice 'inicial' enviado para a função é inserido na pilha de execução e é marcado true
     em seu index no vetor de vertices visitadas */
     empurrar(pilha, inicial);
-    escreverBoolEEPROM(pgm_read_word_near(pos_visitado) + inicial, true);
+    escreverBoolEEPROM(pgm_read_word_near(POS_VISITADO) + inicial, true);
   
     /* Aqui damos inicio a execução dos elementos da pilha, a condição de parada será quando a pilha 
     de execução estiver vazia */
@@ -575,11 +609,11 @@ int dfs(int inicial){
       /* Itera sobre todos as vertices do grafo */
       for(int i = 0; i < tam_matrix; i++){
         /* Caso o vertice iterado no 'for' seja vizinho e não tenha sido visitado durante a DFS */
-        if(lerIntEEPROM(pgm_read_word_near(pos_vetorVizinhos) + i) == 1 && !lerBoolEEPROM(pgm_read_word_near(pos_visitado) + i)){
+        if(lerIntEEPROM(pgm_read_word_near(POS_VETOR_VIZINHOS) + i) == 1 && !lerBoolEEPROM(pgm_read_word_near(POS_VISITADO) + i)){
             /* Insere o vertice não visitado na pilha de execução e escreve no vetor de vertices visitados 
             o valor 'true', indicando que este vertice ja foi visitado */
             empurrar(pilha, i);
-            escreverBoolEEPROM(pgm_read_word_near(pos_visitado) + i, true);
+            escreverBoolEEPROM(pgm_read_word_near(POS_VISITADO) + i, true);
         }
       }
     }
@@ -590,7 +624,7 @@ int dfs(int inicial){
     */
     int count = 0;
     for(int i = 0; i < tam_matrix; i++){
-      if(lerBoolEEPROM(pgm_read_word_near(pos_visitado) + i) == true){
+      if(lerBoolEEPROM(pgm_read_word_near(POS_VISITADO) + i) == true){
           count++;
       }
     }

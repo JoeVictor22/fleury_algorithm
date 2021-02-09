@@ -3,8 +3,10 @@ from pprint import pprint
 
 def validar(grafo, caminho):
     for i in range(len(caminho) - 1):
+        print(caminho[i] ,end=" -> ")
+        print(caminho[i+1])
+
         if grafo[caminho[i]][caminho[i+1]] == 1:
-            #print("->" + strcaminho[i], end=" ")
             grafo[caminho[i]][caminho[i+1]] = 0
             grafo[caminho[i+1]][caminho[i]] = 0
         else:        
@@ -28,14 +30,19 @@ with open('grafo') as f:
 
 
 with open('caminho') as f:
-    [caminho.append(int(x)) for x in next(f).split()] # read first line
+    #caminho.append( [int(x) for x in next(f).split()])
+    for line in f:
+        for i in line.split():
+            caminho.append(int(i))
     
-pprint(grafo)
-pprint(caminho)
+for i in grafo:
+    print(i)
+
 
 if validar(grafo, caminho):
     print("Trilha valida")
 else:
     print("Trilha invalida")
 
-#pprint(grafo)
+for i in grafo:
+    print(i)
