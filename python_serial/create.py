@@ -10,7 +10,7 @@ def create(size):
 
 
 
-tamanho = input("Qual o tamanho da matriz a ser criada?")
+tamanho = input("Qual o tamanho da matriz a ser criada?\n")
 tamanho = int(tamanho)
 grafo = create(tamanho)
 

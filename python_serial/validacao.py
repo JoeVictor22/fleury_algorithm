@@ -23,9 +23,9 @@ def validar(grafo, caminho):
 grafo = []
 caminho = []
 with open('grafo') as f:
-    size = [int(x) for x in next(f).split()] # read first line
+    size = [int(x) for x in next(f).split()]
     
-    for line in f: # read rest of lines
+    for line in f:
         grafo.append([int(x) for x in line.split()])
 
 
