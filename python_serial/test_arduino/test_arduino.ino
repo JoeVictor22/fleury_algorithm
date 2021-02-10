@@ -43,9 +43,9 @@
 * O programa foi desenvolvido no contexto de um trabalho academico, com o 
 * intuito de implementar o algoritmo de fleury em uma plataforma com limitações
 * de hardware.
-* O arduino UNO atmega328p foi a plataforma alvo de nosso programa, durante o
+* O arduino UNO atmega328p foi a plataforma alvo de nosso trabalho, durante o
 * desenvolvimento da aplicação, foram utilizados o proteus, o SimulIDE e uma
-* placa arduino fisíca para a validação e testes do programa.
+* placa arduino física para a validação e testes do programa.
 * Funções e constantes foram definidas em camelCase e variáveis em snake_case.
 * Para a implementação do algoritmo, utilizamos as seguintes fontes como 
 * referéncia.
@@ -96,6 +96,13 @@
 * e recomeçar a execução, basta enviar '-1' como sinal de WAKE.  
 --------------------------------------------------------------------------*/
 
+/*--------------------------COMUNICAÇÃO SERIAL------------------------------
+* O recebimento de dados pela serial, consiste na leitura de inteiros separados
+* por qualquer outro tipo de caractéres que não sejam algarismos numericos.
+* A interface conectada via serial, deve tratar todos os dados enviados pela
+* placa como String.
+--------------------------------------------------------------------------*/
+
 /* Blibiotecas usadas para tentar reduzir o consumo de energia */
 #include <avr/power.h>
 #include <avr/sleep.h>
@@ -118,9 +125,7 @@ const int POS_VISITADO PROGMEM = TAM_MATRIX_MAX + 1;
 const int POS_VETOR_VIZINHOS PROGMEM = (TAM_MATRIX_MAX * 2) + 1;
 const int POS_ARESTAS_VERTICE PROGMEM = (TAM_MATRIX_MAX * 3) + 1; 
 /* Mensagem para caso não seja possivel gerar uma trilha euleriana, armazenada em Flash */
-const char NOT_EULER[] PROGMEM = {"Grafo não possui caminho Fleuriano!\n"};
-
-
+const char NOT_EULER[] PROGMEM = {"Grafo não possui caminho euleriano"};
 
 /*
   Durante o setup, definimos o baudrate das portas seriais no pino 1 e 2, e definimos um timeout de 20 segundos para a comunicação serial
@@ -315,8 +320,8 @@ void fleury(){
     /* 'v' recebe da EEPROM o valor da aresta */
     v = lerIntEEPROM(pgm_read_word_near(POS_ARESTAS_VERTICE) + i);
     
-      /* Verifica se no par [start][v] existe aresta e se essa aresta, caso exista, é uma aresta de corte e 
-      pode ser usada no caminho */
+      /* Verifica se no par [start][v] existe aresta e se essa aresta, caso exista, é uma aresta valida para
+      ser usada no caminho */
       if (grafo_matriz[start][v] == 1 && ehCaminhoValido(start, v, n_arestas_vertice)){
         /* A aresta é removida da matriz de adjancecia para nao ser utilizada nas proximas iteracoes */
         grafo_matriz[start][v] = 0;
@@ -367,10 +372,14 @@ void fleury(){
   if (qtdArestas() > 0){
     /* Retorna a Serial uma mensagem informando que não possui caminho */
     Serial.println();
-    /* Lê byte por byte a mensagem de saida armazenada na Flash */
+    /* Lê byte por byte a mensagem de saida armazenada na Flash e utiliza uma variavel auxiliar para
+    converter o espaço de memória para char */
+    char aux_char;
     for (byte k = 0; k < strlen_P(NOT_EULER); k++) {
-      Serial.print(pgm_read_byte_near(NOT_EULER + k));
+      aux_char = pgm_read_byte_near(NOT_EULER + k);
+      Serial.print(aux_char);
     }
+    Serial.println("");
 
 
   }

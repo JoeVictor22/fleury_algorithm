@@ -125,9 +125,7 @@ const int POS_VISITADO PROGMEM = TAM_MATRIX_MAX + 1;
 const int POS_VETOR_VIZINHOS PROGMEM = (TAM_MATRIX_MAX * 2) + 1;
 const int POS_ARESTAS_VERTICE PROGMEM = (TAM_MATRIX_MAX * 3) + 1; 
 /* Mensagem para caso não seja possivel gerar uma trilha euleriana, armazenada em Flash */
-const char NOT_EULER[] PROGMEM = {"Grafo não possui caminho Fleuriano!\n"};
-
-
+const char NOT_EULER[] PROGMEM = {"Grafo não possui caminho euleriano"};
 
 /*
   Durante o setup, definimos o baudrate das portas seriais no pino 1 e 2, e definimos um timeout de 20 segundos para a comunicação serial
@@ -374,10 +372,14 @@ void fleury(){
   if (qtdArestas() > 0){
     /* Retorna a Serial uma mensagem informando que não possui caminho */
     Serial.println();
-    /* Lê byte por byte a mensagem de saida armazenada na Flash */
+    /* Lê byte por byte a mensagem de saida armazenada na Flash e utiliza uma variavel auxiliar para
+    converter o espaço de memória para char */
+    char aux_char;
     for (byte k = 0; k < strlen_P(NOT_EULER); k++) {
-      Serial.print(pgm_read_byte_near(NOT_EULER + k));
+      aux_char = pgm_read_byte_near(NOT_EULER + k);
+      Serial.print(aux_char);
     }
+    Serial.println("");
 
 
   }
