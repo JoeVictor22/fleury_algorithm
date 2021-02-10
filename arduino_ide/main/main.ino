@@ -43,9 +43,9 @@
 * O programa foi desenvolvido no contexto de um trabalho academico, com o 
 * intuito de implementar o algoritmo de fleury em uma plataforma com limitações
 * de hardware.
-* O arduino UNO atmega328p foi a plataforma alvo de nosso programa, durante o
+* O arduino UNO atmega328p foi a plataforma alvo de nosso trabalho, durante o
 * desenvolvimento da aplicação, foram utilizados o proteus, o SimulIDE e uma
-* placa arduino fisíca para a validação e testes do programa.
+* placa arduino física para a validação e testes do programa.
 * Funções e constantes foram definidas em camelCase e variáveis em snake_case.
 * Para a implementação do algoritmo, utilizamos as seguintes fontes como 
 * referéncia.
@@ -94,6 +94,13 @@
 * Após a execução do ciclo descrito, o programa coloca a placa em um modo
 * IDLE, para reduzir o consumo de energia. Para tirar a placa desse estado
 * e recomeçar a execução, basta enviar '-1' como sinal de WAKE.  
+--------------------------------------------------------------------------*/
+
+/*--------------------------COMUNICAÇÃO SERIAL------------------------------
+* O recebimento de dados pela serial, consiste na leitura de inteiros separados
+* por qualquer outro tipo de caractéres que não sejam algarismos numericos.
+* A interface conectada via serial, deve tratar todos os dados enviados pela
+* placa como String.
 --------------------------------------------------------------------------*/
 
 /* Blibiotecas usadas para tentar reduzir o consumo de energia */
@@ -315,8 +322,8 @@ void fleury(){
     /* 'v' recebe da EEPROM o valor da aresta */
     v = lerIntEEPROM(pgm_read_word_near(POS_ARESTAS_VERTICE) + i);
     
-      /* Verifica se no par [start][v] existe aresta e se essa aresta, caso exista, é uma aresta de corte e 
-      pode ser usada no caminho */
+      /* Verifica se no par [start][v] existe aresta e se essa aresta, caso exista, é uma aresta valida para
+      ser usada no caminho */
       if (grafo_matriz[start][v] == 1 && ehCaminhoValido(start, v, n_arestas_vertice)){
         /* A aresta é removida da matriz de adjancecia para nao ser utilizada nas proximas iteracoes */
         grafo_matriz[start][v] = 0;
