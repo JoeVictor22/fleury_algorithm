@@ -98,7 +98,8 @@
 
 /*--------------------------COMUNICAÇÃO SERIAL------------------------------
 * O recebimento de dados pela serial, consiste na leitura de inteiros separados
-* por qualquer outro tipo de caractéres que não sejam algarismos numericos.
+* por qualquer outro tipo de caractéres que não sejam algarismos numericos. Os
+* inteiros enviados pela serial devem ser entregues como char.
 * A interface conectada via serial, deve tratar todos os dados enviados pela
 * placa como String.
 --------------------------------------------------------------------------*/
