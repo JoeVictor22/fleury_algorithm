@@ -185,6 +185,19 @@ void dormir(){
 }
 
 
+int calculaMatrizPos(int i, int j){
+  if(i <= j){
+    return (i * tam_matrix - (i - 1) * i / 2 + j - i - tam_matrix);
+  }else{
+    return (j * tam_matrix - (j - 1) * j / 2 + i - j - tam_matrix);
+  }
+}
+void escreveMatriz(int valor, int i, int j){
+  grafo_matriz[calculaMatrizPos(i,j)] = valor;
+}
+int leMatriz(int i, int j){
+  return grafo_matriz[calculaMatrizPos(i,j)];
+}
 
 /*
   Recebe a quantidade de vertices que irá definir o tamanho da matriz utilizado durante a computação
