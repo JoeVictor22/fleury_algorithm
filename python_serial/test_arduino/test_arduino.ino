@@ -139,6 +139,11 @@ void loop(){
   tamanhoMat(); 
   /* Recebe a matriz de adjacencia */
   recebeMatriz();
+
+
+  printGrafo();
+
+
   /* Computa a matriz */
   fleury();
   /* Entre em um modo de consumo */
@@ -785,4 +790,10 @@ void printGrafo(){
         }
         Serial.println();
     }
+    
+    for(int i = 0; i < tam_matrix*tam_matrix; i++){
+      Serial.print(grafo_matriz[i]-0);
+      Serial.print(" ");
+    }
+    Serial.println();
 }
