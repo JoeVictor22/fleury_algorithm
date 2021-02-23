@@ -111,7 +111,7 @@
 no inicio de cada iteração e será usado durante a computação para definir a quantidade de vertices usados */
 int tam_matrix = 0;
 /* Declaração da estrutura de dados utilizada pela aplicação */
-char grafo_matriz[TAM_MATRIX_MAX*TAM_MATRIX_MAX];
+char grafo_matriz[((TAM_MATRIX_MAX*TAM_MATRIX_MAX) - TAM_MATRIX_MAX)/2];
 /* Constantes utilizadas para o armazenamento de vetores na EEPROM, cada constante indica o endereço de um vetor na EEPROM */
 /* As constantes foram armazenadas em Flash como uma tentativa de reduzir o consumo de SRAM */
 const int POS_VISITADO PROGMEM = TAM_MATRIX_MAX + 1;
@@ -791,7 +791,7 @@ void printGrafo(){
         Serial.println();
     }
     
-    for(int i = 0; i < tam_matrix*tam_matrix; i++){
+    for(int i = 0; i < ((tam_matrix*tam_matrix) - tam_matrix)/2; i++){
       Serial.print(grafo_matriz[i]-0);
       Serial.print(" ");
     }
