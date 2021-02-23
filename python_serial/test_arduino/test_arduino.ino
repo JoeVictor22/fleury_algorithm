@@ -111,7 +111,7 @@
 no inicio de cada iteração e será usado durante a computação para definir a quantidade de vertices usados */
 int tam_matrix = 0;
 /* Declaração da estrutura de dados utilizada pela aplicação */
-char grafo_matriz[TAM_MATRIX_MAX][TAM_MATRIX_MAX];
+char grafo_matriz[TAM_MATRIX_MAX*TAM_MATRIX_MAX];
 /* Constantes utilizadas para o armazenamento de vetores na EEPROM, cada constante indica o endereço de um vetor na EEPROM */
 /* As constantes foram armazenadas em Flash como uma tentativa de reduzir o consumo de SRAM */
 const int POS_VISITADO PROGMEM = TAM_MATRIX_MAX + 1;
@@ -185,6 +185,28 @@ void dormir(){
 }
 
 
+int calculaMatrizPos(int i, int j){
+  if(i < j){
+    return (i*(tam_matrix-1) - (i-1)*((i-1) + 1)/2 + j - i - 1);
+  }else if (i > j){
+      return (j*(tam_matrix-1) - (j-1)*((j-1) + 1)/2 + i - j - 1);
+  }else{
+    return -1;
+  }
+}
+void escreveMatriz(int valor, int i, int j){
+  if(i != j){
+    grafo_matriz[calculaMatrizPos(i,j)] = valor;
+  }
+}
+int lerMatriz(int i, int j){
+  if (i != j){
+    return grafo_matriz[calculaMatrizPos(i,j)];
+  }else{
+    return 0;
+  }
+
+}
 
 /*
   Recebe a quantidade de vertices que irá definir o tamanho da matriz utilizado durante a computação
@@ -224,9 +246,15 @@ void recebeMatriz(){
           valor na sua posição correspondente da matriz */
           int aux = Serial.parseInt(SKIP_ALL);
           if( aux == 1 || aux == 0){
+            
+            /*ALTER
             grafo_matriz[i][j] = aux;
+            */
+            if( j > i){
+              escreveMatriz(aux, i, j);
+            }
             /* Envia para a serial o valor armazenado e quebra o laço */
-            Serial.print(grafo_matriz[i][j] - 0);
+            Serial.print(lerMatriz(i,j) - 0);
             Serial.print(" ");
             break;
           }
@@ -253,7 +281,10 @@ int buscarInicial(){
     /* Itera sobre todos os vertices conectados ao vertice 'i' e incrementa a contagem de graus caso exista aresta 
     conectada ao vertice 'j' */
     for(int j = 0; j < tam_matrix; j++){
+      /*ALTER
       if (grafo_matriz[i][j] == 1){
+      */
+      if (lerMatriz(i,j) == 1){
         grau++;
       }
     }
@@ -317,10 +348,16 @@ void fleury(){
     
       /* Verifica se no par [start][v] existe aresta e se essa aresta, caso exista, é uma aresta de corte e 
       pode ser usada no caminho */
+      /*ALTER
       if (grafo_matriz[start][v] == 1 && ehCaminhoValido(start, v, n_arestas_vertice)){
+      */
+      if (lerMatriz(start,v) == 1 && ehCaminhoValido(start, v, n_arestas_vertice)){
         /* A aresta é removida da matriz de adjancecia para nao ser utilizada nas proximas iteracoes */
+        /*ALTER
         grafo_matriz[start][v] = 0;
         grafo_matriz[v][start] = 0;
+        */
+        escreveMatriz(0,start,v);
     
         /* O vertice visitada, agora passa a ser o próximo vertice utilizada como referencia de inicio para 
         a verificação do caminho */
@@ -340,8 +377,11 @@ void fleury(){
     escolhido */
     if(i >= n_arestas_vertice){
         /* A aresta é removida da matriz de adjancecia para nao ser utilizada nas proximas iteracoes */
+        /*ALTER
         grafo_matriz[start][v] = 0;
-        grafo_matriz[v][start] = 0; 
+        grafo_matriz[v][start] = 0;
+        */
+        escreveMatriz(0,start,v);
     
         /* O vertice visitada, agora passa a ser o próximo vertice utilizada como referencia de inicio para 
         a verificação do caminho */
@@ -367,9 +407,12 @@ void fleury(){
   if (qtdArestas() > 0){
     /* Retorna a Serial uma mensagem informando que não possui caminho */
     Serial.println();
+
+    char aux;
     /* Lê byte por byte a mensagem de saida armazenada na Flash */
     for (byte k = 0; k < strlen_P(NOT_EULER); k++) {
-      Serial.print(pgm_read_byte_near(NOT_EULER + k));
+      aux = pgm_read_byte_near(NOT_EULER + k);
+      Serial.print(aux);
     }
 
 
@@ -391,7 +434,7 @@ int countArestas(int row){
     /* Itera sobre todos os vertices da matriz e verifica se cada um deles possui uma aresta conectada com
     o vertice de referencia */
     for(int i = 0; i < tam_matrix; i++){
-        if(grafo_matriz[row][i] == 1){
+        if(lerMatriz(row,i) == 1){
             /* Caso exista aresta, é salvo o valor na EEPROM e o contador é incrementado */
             escreverIntEEPROM(pgm_read_word_near(POS_ARESTAS_VERTICE) + count, i);
             count++;
@@ -419,7 +462,7 @@ bool ehCaminhoValido(int start, int end, int n_arestas_vertice){
   int count = 0;
   /* Contabiliza as arestas de 'start' */
   for (int i = 0; i < n_arestas_vertice; i++){ 
-    if(grafo_matriz[start][i] == 1){
+    if(lerMatriz(start, i) == 1){
       count++;
     }
   }
@@ -429,17 +472,23 @@ bool ehCaminhoValido(int start, int end, int n_arestas_vertice){
   if (count == 1){
     /* Salva a quantidade de vertices que podem ser alcançados apartir do vertice 'end' com a aresta de 'start' para 'end'*/
     int dfs_c_aresta = dfs(end);
-    
     /* Remove a aresta da matriz */
+    /*ALTER
     grafo_matriz[end][start] = 0;
     grafo_matriz[start][end] = 0;
+    */
+    escreveMatriz(0, start,end);
+    
 
     /* Salva a quantidade de vertices que podem ser alcançados apartir do vertice 'end' caso a aresta seja removida */
     int dfs_s_aresta = dfs(end);
 
     /* Insere a aresta de volta a matriz */
+    /*ALTER  
     grafo_matriz[end][start] = 1;
     grafo_matriz[start][end] = 1;
+    */
+    escreveMatriz(1, start,end);
 
     /* Caso a remoção da aresta reduza o nummero de vertices acessiveis, é retornado 'false' indicado que não deve ser 
     utilizado essa aresta, caso contrario é retornado 'true' */
@@ -559,7 +608,10 @@ int lerIntEEPROM(int pos){
 void copiarGrafoLinha(int row){   
   /* Itera sobre toda a linha e escreve um inteiro na EEPROM no endereco de memoria do vetor de vertices vizinhas */
   for(int j = 0; j < tam_matrix; j++){
+    /*ALTER
     escreverIntEEPROM(pgm_read_word_near(POS_VETOR_VIZINHOS) + j, grafo_matriz[row][j]);
+    */
+    escreverIntEEPROM(pgm_read_word_near(POS_VETOR_VIZINHOS) + j, lerMatriz(row, j));
   }
 }
 
@@ -709,7 +761,10 @@ int qtdArestas(){
   da matriz */
   for (int i = 0; i < tam_matrix; i++){
     for (int j = i; j < tam_matrix; j++){
+      /*ALTER
       arestas+=grafo_matriz[i][j];
+      */
+      arestas+=lerMatriz(i,j);
     }
   }
   return arestas;
@@ -722,7 +777,10 @@ void printGrafo(){
     Serial.println();
     for( int i =0 ; i < tam_matrix; i++){
         for( int j= 0; j < tam_matrix; j++){
+            /*ALTER
             Serial.print(grafo_matriz[i][j]-0);
+            */
+            Serial.print(lerMatriz(i,j)-0);
             Serial.print(" ");
         }
         Serial.println();

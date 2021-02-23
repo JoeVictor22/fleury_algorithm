@@ -17,6 +17,13 @@ matriz = [
     [1,1,1,1,0]
     ]
 '''
+def fromMatrixToVector(row, col, N):
+   if (row<col):
+      return int(row*(N-1) - (row-1)*((row-1) + 1)/2 + col - row - 1)
+   elif (col<row):
+      return int(col*(N-1) - (col-1)*((col-1) + 1)/2 + row - col - 1)
+   else:
+      return -1
 
 def create(size):
     grafo = [[0 for i in range(size)] for j in range(size)] 
@@ -26,27 +33,18 @@ def create(size):
                 grafo[i][j] = 1
     return grafo
 
-length = 100
+length = 5
+
 
 matriz = create(length)
 
 
-def fromMatrixToVector(i, j,  N):
-   if i <= j:
-      return int(i * N - (i - 1) * i / 2 + j - i - N)
-   else:
-      return int(j * N - (j - 1) * j / 2 + i - j - N)
-
 index = 0
-for i in range(1, length):
-    
-    for j in range(i, length):
+for i in range(0, length):    
+    for j in range(0, length):
         pos = fromMatrixToVector(i, j, length)
-        if index != pos:
-            print("posicao errado")
-            exit()
 
-        print(str(i) + " - " +str(j+1) + " : " + str(index) + " -- " + str(pos))
+        print(str(i) + " - " +str(j) + " : " +  str(pos))
         index+=1
 
 
