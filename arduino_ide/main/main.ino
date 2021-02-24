@@ -103,20 +103,31 @@
 #include <avr/pgmspace.h>
 #include <EEPROM.h>
 /* Quantidade de vertices máxima aceitada pela aplicação, isso resulta em TAM_MATRIX_MAX^2 bytes alocados no escopo global */
-#define TAM_MATRIX_MAX 40
-/* Quantidade minima de vertices permitida */
+#define TAM_MATRIX_MAX 50
 #define TAM_MATRIX_MIN 1
+#define MAX_VERTEX 60
+#define MIN_VERTEX 0
+
+int max_sram_index = ((TAM_MATRIX_MAX*TAM_MATRIX_MAX) - TAM_MATRIX_MAX)/2;
+
+/* Quantidade minima de vertices permitida */
+
 
 /* Variável que indica a quantidade de linhas X colunas que serão computadas nessa iteração, esse valor será recebido via serial 
 no inicio de cada iteração e será usado durante a computação para definir a quantidade de vertices usados */
 int tam_matrix = 0;
 /* Declaração da estrutura de dados utilizada pela aplicação */
 char grafo_matriz[((TAM_MATRIX_MAX*TAM_MATRIX_MAX) - TAM_MATRIX_MAX)/2];
-/* Constantes utilizadas para o armazenamento de vetores na EEPROM, cada constante indica o endereço de um vetor na EEPROM */
-/* As constantes foram armazenadas em Flash como uma tentativa de reduzir o consumo de SRAM */
-const int POS_VISITADO PROGMEM = TAM_MATRIX_MAX + 1;
-const int POS_VETOR_VIZINHOS PROGMEM = (TAM_MATRIX_MAX * 2) + 1;
-const int POS_ARESTAS_VERTICE PROGMEM = (TAM_MATRIX_MAX * 3) + 1; 
+
+
+/*
+  VETORES ANTIGAMENTE LOCAIS
+*/
+char arestas_vertice[MAX_VERTEX];
+char pilha[MAX_VERTEX];
+char visitado[MAX_VERTEX];
+char vetorVizinhos[MAX_VERTEX];
+
 /* Mensagem para caso não seja possivel gerar uma trilha euleriana, armazenada em Flash */
 const char NOT_EULER[] PROGMEM = {"Grafo não possui caminho Fleuriano!\n"};
 
@@ -136,10 +147,10 @@ void setup(){
 */
 void loop(){
   /* Recebe a quantidade de vertices */
+
   tamanhoMat(); 
   /* Recebe a matriz de adjacencia */
   recebeMatriz();
-
 
   printGrafo();
 
@@ -201,12 +212,25 @@ int calculaMatrizPos(int i, int j){
 }
 void escreveMatriz(int valor, int i, int j){
   if(i != j){
-    grafo_matriz[calculaMatrizPos(i,j)] = valor;
+    int index = calculaMatrizPos(i,j);
+    if (index >= max_sram_index){
+      escreverCharEEPROM(index - max_sram_index, valor);
+    }else{
+      grafo_matriz[index] = valor;
+    }
+
   }
 }
 int lerMatriz(int i, int j){
   if (i != j){
-    return grafo_matriz[calculaMatrizPos(i,j)];
+    int index = calculaMatrizPos(i,j);
+    if (index >= max_sram_index){
+      char aux = lerCharEEPROM(index - max_sram_index);
+      return aux;
+    }else{
+      return grafo_matriz[index];
+    }
+ 
   }else{
     return 0;
   }
@@ -226,10 +250,12 @@ void tamanhoMat(){
       /* Busca o proximo inteiro valido na serial e ignora qualquer outro caractére */
       tam_matrix=Serial.parseInt(SKIP_ALL);
       /* Verifica se o inteiro inserido esta dentre os valores permitidos */
-      if(tam_matrix > TAM_MATRIX_MIN && tam_matrix <= TAM_MATRIX_MAX){
-        /* Envia para a serial o valor aceito e quebra o laço */
-        Serial.println(tam_matrix);
-        break;  
+      if(tam_matrix > MIN_VERTEX && tam_matrix <= MAX_VERTEX){
+        if(true){
+          /* Envia para a serial o valor aceito e quebra o laço */
+          Serial.println(tam_matrix);
+          break;  
+       }
       }
     }
   }
@@ -259,16 +285,15 @@ void recebeMatriz(){
               escreveMatriz(aux, i, j);
             }
             /* Envia para a serial o valor armazenado e quebra o laço */
-            Serial.print(lerMatriz(i,j) - 0);
-            Serial.print(" ");
+            //Serial.print(lerMatriz(i,j) - 0);
+            //Serial.print(" ");
             break;
           }
-
         }
       }
     }
     /* Quebra de linha para melhorar a visualização */
-    Serial.println();
+    //Serial.println();
   }
 }
 
@@ -339,6 +364,7 @@ void fleury(){
   indicando que o caminho chegou ao fim */
   while(true){
 
+    
     /* Número de arestas do vertice que está sendo verificado */
     int n_arestas_vertice = 0;
     /* countArestas é responval por calcular o número de arestas de 'start' e armazena-las na EEPROM da placa */
@@ -349,7 +375,7 @@ void fleury(){
     int i;
     for (i = 0; i < n_arestas_vertice; i++){
     /* 'v' recebe da EEPROM o valor da aresta */
-    v = lerIntEEPROM(pgm_read_word_near(POS_ARESTAS_VERTICE) + i);
+    v = arestas_vertice[i];
     
       /* Verifica se no par [start][v] existe aresta e se essa aresta, caso exista, é uma aresta de corte e 
       pode ser usada no caminho */
@@ -441,7 +467,7 @@ int countArestas(int row){
     for(int i = 0; i < tam_matrix; i++){
         if(lerMatriz(row,i) == 1){
             /* Caso exista aresta, é salvo o valor na EEPROM e o contador é incrementado */
-            escreverIntEEPROM(pgm_read_word_near(POS_ARESTAS_VERTICE) + count, i);
+            arestas_vertice[count] = i;
             count++;
         }
     }
@@ -510,53 +536,12 @@ bool ehCaminhoValido(int start, int end, int n_arestas_vertice){
 }
 
 /* 
-  Inicia um vetor de inteiros na memoria EEPROM.
-  Entrada:
-  'pos' = inteiro indicando o endereco de memoria em que o vetor começa
-  'valor' = inteiro que será armazenado em todo o vetor
-*/
-void iniciarVetorIntEEPROM(int pos, int valor){
-  for(int i = 0; i < tam_matrix; i++){
-    /* Escreve na posicao de memoria */
-    escreverIntEEPROM(pos + i, valor);
-  }
-}
-
-/* 
-  Inicia um vetor de boleanos na memoria EEPROM.
-  Entrada:
-  'pos' = inteiro indicando o endereco de memoria em que o vetor começa
-  'valor' = boleano que será armazenado em todo o vetor
-*/
-void iniciarVetorBoolEEPROM(int pos, bool valor){
-  for(int i = 0; i < tam_matrix; i++){
-    /* Escreve na posicao de memoria */
-    escreverBoolEEPROM(pos + i, valor);
-  }
-}
-
-/* 
-  Escreve um boleano em dada posicão de memoria EEPROM.
-  Entrada:
-  'pos' = inteiro indicando o endereco de memoria em que sera armazenado o valor
-  'valor' = boleano que será armazenado em todo o vetor
-*/
-void escreverBoolEEPROM(int pos, bool valor){
-  /* byte com o valor a ser escrito */
-  byte* p = (byte*)(void*)&valor;
-  for (int i = 0; i < sizeof(valor); i++){
-    /* chamada EEPROM para escrita */
-    EEPROM.update(pos++, *p++);
-  }
-}
-
-/* 
   Escreve um inteiro em dada posicão de memoria EEPROM.
   Entrada:
   'pos' = inteiro indicando o endereco de memoria em que sera armazenado o valor
   'valor' = inteiro que será armazenado em todo o vetor
 */
-void escreverIntEEPROM(int pos, int valor){
+void escreverCharEEPROM(int pos, char valor){
   /* byte com o valor a ser escrito */
   byte* p = (byte*)(void*)&valor;
   for (int i = 0; i < sizeof(valor); i++)
@@ -566,25 +551,6 @@ void escreverIntEEPROM(int pos, int valor){
   }
 }
 
-/* 
-  Realiza uma leitura em dada posicão de memoria EEPROM e retorna o valor armazenado nela.
-  Entrada:
-  'pos' = inteiro indicando o endereco de memoria em que sera realizado a leitura
-  Saida: boleano armezanado naquele endereço
-*/
-bool lerBoolEEPROM(int pos){
-  /* Variável usada para obter o tamanho do dado que será lido */
-  bool valor = false;
-  /* Define um byte para armazenar o valor lido na memoria */
-  byte* p = (byte*)(void*)&valor;
-
-  /* Lê o tamanho em bytes da posição de memoria e armazena no byte 'p' */
-  for (int i = 0; i < sizeof(valor); i++){
-  *p++ = EEPROM.read(pos++);
-  }
-  /* Retorna o valor lido */
-  return valor;
-}
 
 /* 
   Realiza uma leitura em dada posicão de memoria EEPROM e retorna o valor armazenado nela.
@@ -592,9 +558,9 @@ bool lerBoolEEPROM(int pos){
   'pos' = inteiro indicando o endereco de memoria em que sera realizado a leitura
   Saida: inteiro armezanado naquele endereço
 */
-int lerIntEEPROM(int pos){
+char lerCharEEPROM(int pos){
   /* Variável usada para obter o tamanho do dado que será lido */
-  int valor = 0;
+  char valor = 0;
   /* Define um byte para armazenar o valor lido na memoria */
   byte* p = (byte*)(void*)&valor;
 
@@ -616,7 +582,7 @@ void copiarGrafoLinha(int row){
     /*ALTER
     escreverIntEEPROM(pgm_read_word_near(POS_VETOR_VIZINHOS) + j, grafo_matriz[row][j]);
     */
-    escreverIntEEPROM(pgm_read_word_near(POS_VETOR_VIZINHOS) + j, lerMatriz(row, j));
+    vetorVizinhos[j] = lerMatriz(row, j);
   }
 }
 
@@ -636,41 +602,47 @@ int dfs(int inicial){
     */
 
     /* Pilha de execução, que irá somente ter a função de indicar quais vertices devem ser analisados*/
-    int pilha[tam_matrix];
+    //int pilha[tam_matrix];
+    
     /* Inicia o vetor da pilha com o valor '-1' em todas as suas posições, indicando que não existe 
     elementos na pilha que devem ser executados */
-    iniciarVetor(pilha);
-
+    iniciarVetor();
+   
     /* Inicia o vetor boleano de vertices visitados com o valor 'false'. Cada index representa um vertice
     e o valor armazenado nele diz se esse vertice foi ou nao verificado durante a DFS */
-    iniciarVetorBoolEEPROM(pgm_read_word_near(POS_VISITADO), false);
+    //bool visitado[tam_matrix];
+    for(int i = 0; i < tam_matrix; i++){
+        visitado[i] = 0;
+    }
 
     /* O vertice 'inicial' enviado para a função é inserido na pilha de execução e é marcado true
     em seu index no vetor de vertices visitadas */
-    empurrar(pilha, inicial);
-    escreverBoolEEPROM(pgm_read_word_near(POS_VISITADO) + inicial, true);
+    empurrar(inicial);
+    visitado[inicial] = 1;
   
     /* Aqui damos inicio a execução dos elementos da pilha, a condição de parada será quando a pilha 
     de execução estiver vazia */
-    while(!ehVazio(pilha)){ 
+    while(!ehVazio()){ 
         
       /* Variável que representa a vertice que será analisada. A escolha dessa vertice depende do ultimo 
       elemento que se encontra na pilha de execução*/
       int vertice;
-      vertice = sacar(pilha);
+      vertice = sacar();
       
       /* Salva na EEPROM a linha do grafo correspondente a vertice que está sendo analisada, isso significa
       que o vetor salvo na EEPROM irá possuir todas as arestas conectadas a esse vertice */
+     
+      //int vetorVizinhos[tam_matrix];
       copiarGrafoLinha(vertice);
       
       /* Itera sobre todos as vertices do grafo */
       for(int i = 0; i < tam_matrix; i++){
         /* Caso o vertice iterado no 'for' seja vizinho e não tenha sido visitado durante a DFS */
-        if(lerIntEEPROM(pgm_read_word_near(POS_VETOR_VIZINHOS) + i) == 1 && !lerBoolEEPROM(pgm_read_word_near(POS_VISITADO) + i)){
+        if(vetorVizinhos[i] == 1 && visitado[i] == 0){
             /* Insere o vertice não visitado na pilha de execução e escreve no vetor de vertices visitados 
             o valor 'true', indicando que este vertice ja foi visitado */
-            empurrar(pilha, i);
-            escreverBoolEEPROM(pgm_read_word_near(POS_VISITADO) + i, true);
+            empurrar(i);
+            visitado[i] = 1;
         }
       }
     }
@@ -681,7 +653,7 @@ int dfs(int inicial){
     */
     int count = 0;
     for(int i = 0; i < tam_matrix; i++){
-      if(lerBoolEEPROM(pgm_read_word_near(POS_VISITADO) + i) == true){
+      if(visitado[i] == 1){
           count++;
       }
     }
@@ -695,9 +667,9 @@ int dfs(int inicial){
   as posicoes.
   Entrada: um ponteiro para o vetor de inteiros da pilha
 */
-void iniciarVetor(int *vector){
+void iniciarVetor(){
     for(int i=0; i < tam_matrix;i++){
-        vector[i] = -1;
+        pilha[i] = -1;
     }
 }
 
@@ -707,7 +679,7 @@ void iniciarVetor(int *vector){
   Entrada: um ponteiro para o vetor de inteiros da pilha
   Saida: um boleano indicando se a pilha esta ou nao vazia
 */
-bool ehVazio(int *pilha){
+bool ehVazio(){
     for(int i=0; i < tam_matrix; i++){
         if(pilha[i] != -1){
             return false;
@@ -722,7 +694,7 @@ bool ehVazio(int *pilha){
   'pilha'= um ponteiro para o vetor de inteiros da pilha
   'value' = valor a ser armazenado no topo da pilha
 */
-void empurrar(int *pilha, int value){
+void empurrar(int value){
   /* Itera sobre a pilha ate encontrar um elemento vazio, com '-1' armazenado */
   int i;
   for(i = 0; i < tam_matrix; i++){
@@ -739,7 +711,7 @@ void empurrar(int *pilha, int value){
   Entrada: um ponteiro para o vetor de inteiros da pilha
   Saida: um inteiro que é o elemento do topo da pilha
 */
-int sacar(int *pilha){
+int sacar(){
     /* Itera sobre a pilha ate encontrar um elemento vazio, com '-1' armazenado */
     int i;
     for(i=0; i < tam_matrix; i++){
@@ -790,10 +762,11 @@ void printGrafo(){
         }
         Serial.println();
     }
-    
+    /*
     for(int i = 0; i < ((tam_matrix*tam_matrix) - tam_matrix)/2; i++){
       Serial.print(grafo_matriz[i]-0);
       Serial.print(" ");
     }
     Serial.println();
+    */
 }

@@ -1,57 +1,89 @@
-#include <stdio.h>
-#include <stdbool.h>
-#include <stdlib.h>
+#include <avr/power.h>
+#include <avr/sleep.h>
+#include <avr/pgmspace.h>
+#include <EEPROM.h>
+#define TAM_MATRIX_MAX 27
 
-#include "dfs.h"
-#include "grafo.h"
-#include "definitions.h"
+int tam_matrix = 0;
+int grafo_matriz[TAM_MATRIX_MAX ][TAM_MATRIX_MAX ];
+int pos_pilha = 0;
+int pos_visitado = TAM_MATRIX_MAX  + 1;
+int pos_vetorVizinhos = (TAM_MATRIX_MAX  * 2) + 1;
 
-/*
-Implementação Iterativa do algoritimo de Fleury com busca em profundidade
+void setup(){
+  Serial.begin(9600); // Baudrate do terminal de entrada pinos 1,2
+}
 
-Copyright © 2020 by Joel Victor Castro Galvão, Raynan Serafim de Souza
+void loop(){
+  tamanho_mat();
+  recebe_matrix();
+  fleury();
+  dormir();
+}
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell 
-copies of the Software, and to permit persons to whom the Software is 
-furnished to do so, subject to the following conditions:
+void dormir(){
+  delay(200);
+  
+  set_sleep_mode(SLEEP_MODE_PWR_DOWN); // sleep mode is set here
+  sleep_enable(); // enables the sleep bit in the mcucr register
+  // so sleep is possible. just a safety pin
+  power_adc_disable();
+  power_spi_disable();
+  power_timer0_disable();
+  power_timer1_disable();
+  power_timer2_disable();
+  power_twi_disable();
+  sleep_cpu();
+  sleep_mode(); // here the device is actually put to sleep!!
+  
+  while(true){
+    if(Serial.available()){
+      int wakeup_call=Serial.parseInt(SKIP_ALL);
+      if(wakeup_call==-1){
+        // THE PROGRAM CONTINUES FROM HERE AFTER WAKING UP
+        sleep_disable(); // first thing after waking from sleep:
+        // disable sleep...
+       
+        power_all_enable();
+        
+        break;
+      }
+    }
+  }
+}
 
-The above copyright notice and this permission notice shall be included in all 
-copies or substantial portions of the Software.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
-INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A 
-PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
-HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
-OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-*/
+void tamanho_mat(){
+  //Serial.println("Insira o tamanho da matrix X.X:");
+  while(true){
+    Serial.flush();
+    if (Serial.available()){
+      tam_matrix=Serial.parseInt(SKIP_ALL);
+      if(tam_matrix > 1  && tam_matrix <= TAM_MATRIX_MAX){
+       // Serial.print("A matriz sera de tamanho ");
+        //Serial.println(tam_matrix);
+        break;  
+      }
+    }
+  }
+}
 
-
-/*--------------------------------------------------------------------------------*/
-/*A main do programa realiza diversas validações da entrada do usuario, em seguida*/
-/*mostra diversas opções para a geração de uma trilha euleriana                   */
-/*As trilhas geradas podem não ser eficientes, o algoritmo apenas busca obter uma */
-/*trilha euleriana sem se preocupar com otimização do caminho                     */
-/*Uma maneira de validar sua saída, é checar se a matriz de adjacencia se encontra*/
-/*totalmente vazia após a execução do algoritmo, isso indica que todos os vertices*/
-/*foram percorridos e destruidos adequadamentes                                   */
-/*Apos o usuario digitar sua entrada, a matriz gerada é printada, e apos o fim do */
-/*programa, a matriz com as arestas percorridas é printada, assim como o caminho  */
-/*ou uma resposta indicando que não foi possivel encontrar uma trilha euleriana   */
-/*--------------------------------------------------------------------------------*/
-/*Primeira entrada: Quantidade de Vertices do grafo.                              */
-/*Segunda entrada: A para escolher inserir uma matriz de adjacencia ou B para     */
-/*Segunda entrada: Existem tambem duas opcoes, C e D, para casos de teste         */
-/*pares de arestas.                                                               */
-/*Terceira entrada: Caso A, matriz de adjacencia com N*N elementos.               */
-/*Terceira entrada: Caso B, número de Arestas e pares de Arestas no formato 'x-y'.*/
-/*Terceira entrada: Caso C, essa opção ira gerar uma matriz do tamanho informado .*/
-/*Terceira entrada: Caso D, essa opção ira realizar uma serie de testes          .*/
-/*--------------------------------------------------------------------------------*/
-
+void recebe_matrix(){
+  for (int i=0;i<tam_matrix;i++){
+    for (int j=0;j<tam_matrix;j++){
+      while(true){
+        Serial.flush();
+        if(Serial.available()){
+          grafo_matriz[i][j]=Serial.parseInt(SKIP_ALL);
+          //Serial.print(grafo_matriz[i][j]);
+          //Serial.print(" ");
+          break;
+        }
+      }
+    }
+    //Serial.println();
+  }
+}
 
 // Busca o vertice mais indicado para dar inicio no caminho
 // Busca um vertice com grau ímpar, caso não exista nenhum, retorna um vertice qualquer do grafo
@@ -70,11 +102,11 @@ int buscarInicial(int numVert){
   } 
   return 0;
 }
-/*--------------------------------------------------------------------------------*/
 
 // Busca um caminho ou ciclo euleriano no grafo assim como avalia algumas caracteristicas do grafo
-void fleury(int size, int start){
+void fleury(){
   // Contagem de vertices visitados
+  int start = buscarInicial(tam_matrix);
   int vertices_visitados = 0;
   int v = start;
   
@@ -87,206 +119,282 @@ void fleury(int size, int start){
   // Caminho feito no grafo a ser impresso
   int caminho[max_caminho_size];
   */
-  caminho[vertices_visitados] = start; 
+  Serial.print(" ");
+  Serial.print(start);  
+
   vertices_visitados++;
   
   while(true){
     // Cria um vetor com as arestas dado o vertice inicial
-    int arestas_vertice[size];
-	
+    int arestas_vertice[tam_matrix];
+      
     // Quantidade de arestas naquele vertice
     int n_arestas_vertice = 0;
-    n_arestas_vertice = countArestas(size, arestas_vertice, start);
+    n_arestas_vertice = countArestas(arestas_vertice, start);
 
     // Itera sobre as arestas
     int i;
     for (i = 0; i < n_arestas_vertice; i++){
     // V recebe a Aresta 
-	  v = arestas_vertice[i];
-	  
+    v = arestas_vertice[i];
+    
       // Verfica se a posição no Grafo é valida e se a Aresta não é de corte
-      if (grafo_matriz[start][v] == 1 && ehArestaCorte(start, v, arestas_vertice, n_arestas_vertice, size)){
-	    	// Caso a Aresta seja validada ela é removida do Grafo
+      if (grafo_matriz[start][v] == 1 && ehArestaCorte(start, v, arestas_vertice, n_arestas_vertice)){
+        // Caso a Aresta seja validada ela é removida do Grafo
         grafo_matriz[start][v] = 0;
         grafo_matriz[v][start] = 0;
-		
-	    	// O ponto final da Aresta é se torna o ponto inicial para as proximas verificações
+    
+        // O ponto final da Aresta é se torna o ponto inicial para as proximas verificações
         start = v;  
 
-	    	// Guarda o Vertice para printar caminho
-        caminho[vertices_visitados] = start; 
+        // Guarda o Vertice para printar caminho
+        Serial.print(" ");
+        Serial.print(start);
         vertices_visitados++;
         break;
       }
     }
-	
-	  // Caso o Vertice não seja validado anteriormente é escolha a ultima Aresta
+  
+    // Caso o Vertice não seja validado anteriormente é escolha a ultima Aresta
     if(i >= n_arestas_vertice){
         // Remove a Aresta do Grafo
         grafo_matriz[start][v] = 0;
         grafo_matriz[v][start] = 0; 
-		
+    
         // O ponto final da Aresta é se torna o ponto inicial para as proximas verificações
         start = v;
-		
+    
         // Guarda o Vertice para printar caminho
-        caminho[vertices_visitados] = start; 
+        Serial.print(" ");
+        Serial.print(start);
         vertices_visitados++;
     }
 
-  	// Caso de saida uma Vertice que não possui Arestas
+    // Caso de saida uma Vertice que não possui Arestas
     if(n_arestas_vertice == 0){
-	    // Remove pois visita a si mesmo garantindo ser o ultimo ponto
-	    vertices_visitados--; 
+      // Remove pois visita a si mesmo garantindo ser o ultimo ponto
+      vertices_visitados--; 
       break;
     }
   }
 
   // Printa o Grafo após percorer todos os caminhos validos
-  printGrafo(size);
+  //printGrafo();
 
   // Um Grafo contem um caminho Euleriano se somente se ele percore todas as arestas contidas nele.
-  if (qtdArestas(size) == 0){
-    printf("\nCAMINHO ");
-    for( int i = 0 ; i < vertices_visitados; i++){
-      printf("-> %d ", caminho[i]);
-    }
-  }else{
-    printf("\nO grafo não possui trilha euleriana!");
+  if (qtdArestas() > 0){
+    Serial.println(-1);   
   }
 
-  printf("\n");
-} 
+}
 
+// Retorna a quantidade de arestas de um vertice e salva essas vertices em um vetor 
+int countArestas(int *arestas, int row){
+    int count = 0;
+    for(int i = 0; i < tam_matrix; i++){
+        if(grafo_matriz[row][i] == 1){
+            arestas[count] = i;
+            count++;
+        }
+    }
+    return count;
+}
+
+// Valida a Aresta do grafo a ser utilizada
+bool ehArestaCorte(int start, int end, int *adjacentes, int n_arestas_vertice){
+  // Contabiliza a quantidade de ligações que o Vertice possui
+  int count = 0;
+  for (int i = 0; i < n_arestas_vertice; i++){ 
+    if(grafo_matriz[start][i] == 1){
+      count++;
+    }
+  }
+  
+  // Caso o Vertice só possua uma Aresta é realizado uma DFS a fim de reconhecer se ele é uma "Aresta de corte"
+  if (count == 1){
+    // Salva a quantidade de Vertices acessiveis com a Aresta presente no grafo
+    int dfs_c_aresta = dfs(end);
+    
+    grafo_matriz[end][start] = 0;
+    grafo_matriz[start][end] = 0;
+
+    // Salva a quantidade de Vertices acessiveis sem a Aresta presente no grafo
+    int dfs_s_aresta = dfs(end);
+
+    grafo_matriz[end][start] = 1;
+    grafo_matriz[start][end] = 1;
+
+    // Ao comparar o resultado retornado pelas DFS's é definido se a aresta será usada.
+    return (dfs_c_aresta > dfs_s_aresta) ? false : true;
+  
+  /* Caso não seja possivel determinar via uma dfs, essa aresta sera considerada de corte se e somente se a quantidade de
+   vertices conectados seja igual a 0
+  */
+  }else if(count > 1){
+    return false;
+  }else{
+    return true;
+  }
+}
+
+
+void iniciarVetorIntEEPROM(int pos, int valor){
+  for(int i = 0; i < tam_matrix; i++){
+    escreverIntEEPROM(pos + i, valor);
+  }
+}
+void iniciarVetorBoolEEPROM(int pos, bool valor){
+  for(int i = 0; i < tam_matrix; i++){
+    escreverBoolEEPROM(pos + i, valor);
+  }
+}
+
+void escreverBoolEEPROM(int pos, bool valor){
+  byte* p = (byte*)(void*)&valor;
+  for (int i = 0; i < sizeof(valor); i++)
+  {
+    EEPROM.write(pos++, *p++);
+  }
+}
+void escreverIntEEPROM(int pos, int valor){
+  byte* p = (byte*)(void*)&valor;
+  for (int i = 0; i < sizeof(valor); i++)
+  {
+    EEPROM.write(pos++, *p++);
+  }
+}
+
+bool lerBoolEEPROM(int pos){
+  bool valor = false;
+  byte* p = (byte*)(void*)&valor;
+  for (int i = 0; i < sizeof(valor); i++)
+  {
+  *p++ = EEPROM.read(pos++);
+  }
+  return valor;
+}
+int lerIntEEPROM(int pos){
+  int valor = 0;
+  byte* p = (byte*)(void*)&valor;
+  for (int i = 0; i < sizeof(valor); i++)
+  {
+  *p++ = EEPROM.read(pos++);
+  }
+  return valor;
+}
+
+// Copia somente uma linha do Grafo para um vetor
+void copiarGrafoLinha(int row){   
+    for(int j = 0; j < tam_matrix; j++){
+        escreverIntEEPROM(pos_vetorVizinhos + j, grafo_matriz[row][j]);
+    }
+}
+int dfs(int inicial){
+    // Pilha de proximos a entrar na DFS
+    iniciarVetorIntEEPROM(pos_pilha, -1);
+  // Vetor boolenao armazenando vertices que são possiveis ser acessados
+    iniciarVetorBoolEEPROM(pos_visitado, false);
+  // A primeira vertice na DFS é o inicial passado como argumento
+    empurrar(inicial);
+    escreverBoolEEPROM(pos_visitado + inicial, true);
+    //visitado[inicial] = true;
+
+  // Realiza verificações até a pilha estar vazia
+    while(!ehVazio()){ 
+        
+    // Vertice é a vertice onde ira ser feito a DFS
+        int vertice;
+        vertice = sacar();
+        
+        // Recebe um vetor que é a linha da Matriz correspondente ao Vertice a ser feita a DFS
+        //int vetorVizinhos[size];
+        copiarGrafoLinha(vertice);
+        
+    // "i" itera sobre o vetor e marca os vizinhos ao Vertice utilizado
+        for(int i=0; i < tam_matrix; i++){
+      // Caso o vertice seja vizinho, (==1), e ainda não tenha sido marcado como visitado
+      // O vizinho será colocado na pilha para verificar os seus proprios vizinhos e marcado como visitado
+            //if(vetorVizinhos[i] == 1 && !visitado[i]){
+            if(lerIntEEPROM(pos_vetorVizinhos + i) == 1 && !lerBoolEEPROM(pos_visitado + i)){
+                empurrar(i);
+
+                //visitado[i] = true;
+                escreverBoolEEPROM(pos_visitado + i, true);
+            }
+        }
+    }
+
+  // Realiza uma contagem de quantos vertices é possivel atingir a partir do inicial
+    int count = 0;
+    for(int i = 0; i < tam_matrix; i++){
+        //if(visitado[i] == true){
+        if(lerBoolEEPROM(pos_visitado + i) == true){
+            count++;
+        }
+    }
+
+  // Retornar a contagem para comparações
+    return count;
+}
+
+
+/*--------------------------------------------PILHA-------------------------------------------------------*/
+
+// Verifica se a pilha esta preenchida com somente valores -1
+// Caso verdade a pilha se encontra vazia, retorna TRUE.
+bool ehVazio(){
+    for(int i=0; i < tam_matrix; i++){
+        if(lerIntEEPROM(pos_pilha + i) != -1){
+            return false;
+        }    
+    }
+    return true;
+}
+
+// Insere um valor no topo da pilha
+void empurrar( int value){
+    int i;
+    for(i = 0; i < tam_matrix; i++){
+        if(lerIntEEPROM(pos_pilha + i) == -1){
+            break;
+        }
+    }
+    escreverIntEEPROM(pos_pilha + i, value);
+}
+
+// Saca o valor que se encontra no topo da pilha
+int sacar(){
+    int i;
+    for(i=0; i < tam_matrix; i++){
+        if(lerIntEEPROM(pos_pilha + i) == -1){
+            break;
+        }    
+    }
+    int aux = lerIntEEPROM(pos_pilha + i - 1);
+    escreverIntEEPROM(pos_pilha + i -1, -1);
+    return aux;
+}
 
 /*--------------------------------------------------------------------------------------------------------*/
 
-// Função para teste exaustivo da aplicação
-void teste(){
-  printf("\n\nTESTES\n"); 
-  int i;
-  for( i = MIN_SIZE; i <= MAX_SIZE; i++){
-    printf("\n\nSIZE: %d", i);
-    fillMatrix(i, 0);
-
-    create(i);
-    // Busca um vertice para iniciar a verificação do grafo
-    int start = buscarInicial(i); 
-
-    // Trabalha para encontrar um caminho Euleriano no grafo
-    fleury(i, start);
-  } 
-}
-/*--------------------------------------------MAIN-----------------------------------------------------*/
-int main(){
-  // Recebe o tamanho da Matriz que sera trabalhada
-  int matrix_size;
-  printf("Digite o tamanho da matriz: TxT\n");
-  scanf("%d", &matrix_size);
-  
-  // Valida se o valor recebido esta dentro dos limites
-  if( matrix_size > MAX_SIZE || matrix_size < MIN_SIZE){
-    printf("O tamanho máximo aceitado de linhas/colunas é de %d e o minimo é %d\n", MAX_SIZE, MIN_SIZE);
-    exit(0);
-  }
-
-  // Cria o grafo e o preenche com 0
-  //int grafo[matrix_size][matrix_size];
-  fillMatrix(matrix_size, 0);
-  
-  // Recebe o modo de entradas desejado
-  int n_arestas;
-  char option;
-  getchar();
-  printf("Digite 'A' para inserir uma matriz de adjacencia\nDigite 'B' para inserir as arestas do grafo\nDigite 'C' para criar uma matriz automaticamente\nDigite 'D' para realizar casos de teste\n");
-  scanf("%c", &option );
-  switch(option){
-    case 'A':
-    case 'a':
-      printf("Insira os %d valores da matriz de adjacencia, cada valor inserido deve ser 0 ou 1 e devem ser separados por espaço!\n", (matrix_size * matrix_size));
-      for(int i = 0; i < matrix_size; i++){
-        for(int j = 0; j < matrix_size; j++ ){
-          // Recebe a entrada do usuario
-	    	  int temp;
-          scanf("%d", &temp);
-		  
-		      // Valida a entrada do usuario, os valores podem ser somente 0 ou 1
-          if(temp != 0 && temp != 1){
-            printf("Valor invalido, insira 1 ou 0!\n");
-            getchar();
-            j--;
-          }else{
-            grafo_matriz[i][j] = temp;
-          }
+// Printa o Grafo em sua integridade
+void printGrafo(){
+    for( int i =0 ; i < tam_matrix; i++){
+        for( int j= 0; j < tam_matrix; j++){
+            Serial.print(grafo_matriz[i][j]);
+            Serial.print(" ");
         }
-      }
-      break;
-    case 'B':
-    case 'b':
-	   // Recebe a quantidade de arestas no grafo
-      printf("Digite quantas arestas o grafo possui!\n");
-      scanf("%d", &n_arestas);
-      getchar();
-      
-	    // Valida a entrada do usuario, o grafo deve possuir no minimo 1 Aresta
-      if(n_arestas <= 0){
-        printf("O número de arestas digitado é invalido!\n");
-        exit(0);
-      }
-
-	    // Recebe os pares de arestas no formato x-y
-      printf("Digite os %d pares, cada par deve ser inserido no formato 'x-y'.\n", n_arestas);
-      for(int i = 0; i < n_arestas; i++){
-        int x,y;
-        scanf("%d-%d", &x, &y);
-        printf("\nPAR: %d -> %d\n", x, y);
-		
-	    	// Valida se a Aresta esta contida no Grafo
-        if(x < 0 || y < 0 || x >= matrix_size || y >= matrix_size ){
-          printf("\nValor inválido, digite valores de 0 ate %d\n", matrix_size-1);
-          getchar();
-          i--;
-        }else{
-          addAresta(matrix_size, x, y);
-        }
-      }
-      break;
-    // Cria uma matriz com arestas conectadas a todos os vertices, se o tamanho for impar sera gerado um grafo euleriano
-    case 'C':
-    case 'c':
-      create(matrix_size);
-      break;
-    // Realiza um teste sobre todos os grafos possiveis ate o tamanho max permitido pelo algoritimo, gerando grafos com a mesma estrategia do caso 'C'
-    case 'D':
-    case 'd':
-      teste();
-      exit(0);
-      break;
-  	// Valida o caso de entrada
-    default:
-      printf("Opção inválida\n");
-      exit(0);
-      break;
-  }
-
-  // Confirma que a matriz foi inserida em sua integridade e printa para o usuario a mesma
-  printf("\nMATRIZ INSERIDA\n");
-  for(int i = 0; i < matrix_size; i++){
-    for(int j = 0; j < matrix_size; j++ ){
-      printf("%d ", grafo_matriz[i][j]);
+        Serial.println();
     }
-    printf("\n");
-  }
-
-  // Busca um vertice para iniciar a verificação do grafo
-  int start = buscarInicial(matrix_size); 
-
-  // Trabalha para encontrar um caminho Euleriano no grafo
-  fleury(matrix_size, start);
-
-  return 0;
 }
 
-
-
-/*-----------------------------------------------------------------------------------------------------*/
+// Calcula a quantidade de arestas presentes no grafo
+int qtdArestas(){
+  int arestas=0;
+  for (int i=0;i<tam_matrix;i++){
+    for (int j=i;j<tam_matrix;j++){
+      arestas+=grafo_matriz[i][j];
+    }
+  }
+  return arestas;
+}
