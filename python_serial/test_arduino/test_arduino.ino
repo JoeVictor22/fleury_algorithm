@@ -103,12 +103,14 @@
 #include <avr/pgmspace.h>
 #include <EEPROM.h>
 /* Quantidade de vertices máxima aceitada pela aplicação, isso resulta em TAM_MATRIX_MAX^2 bytes alocados no escopo global */
-#define TAM_MATRIX_MAX 50
+#define TAM_MATRIX_MAX 55
 #define TAM_MATRIX_MIN 1
-#define MAX_VERTEX 60
+#define MAX_VERTEX 71
 #define MIN_VERTEX 0
+#define MAX_SRAM 1485
 
-int max_sram_index = ((TAM_MATRIX_MAX*TAM_MATRIX_MAX) - TAM_MATRIX_MAX)/2;
+// 1485
+// 1000
 
 /* Quantidade minima de vertices permitida */
 
@@ -117,7 +119,7 @@ int max_sram_index = ((TAM_MATRIX_MAX*TAM_MATRIX_MAX) - TAM_MATRIX_MAX)/2;
 no inicio de cada iteração e será usado durante a computação para definir a quantidade de vertices usados */
 int tam_matrix = 0;
 /* Declaração da estrutura de dados utilizada pela aplicação */
-char grafo_matriz[((TAM_MATRIX_MAX*TAM_MATRIX_MAX) - TAM_MATRIX_MAX)/2];
+char grafo_matriz[MAX_SRAM];
 
 
 /*
@@ -152,7 +154,7 @@ void loop(){
   /* Recebe a matriz de adjacencia */
   recebeMatriz();
 
-  printGrafo();
+  //printGrafo();
 
 
   /* Computa a matriz */
@@ -213,8 +215,8 @@ int calculaMatrizPos(int i, int j){
 void escreveMatriz(int valor, int i, int j){
   if(i != j){
     int index = calculaMatrizPos(i,j);
-    if (index >= max_sram_index){
-      escreverCharEEPROM(index - max_sram_index, valor);
+    if (index >= MAX_SRAM){
+      escreverCharEEPROM(index - MAX_SRAM, valor);
     }else{
       grafo_matriz[index] = valor;
     }
@@ -224,8 +226,8 @@ void escreveMatriz(int valor, int i, int j){
 int lerMatriz(int i, int j){
   if (i != j){
     int index = calculaMatrizPos(i,j);
-    if (index >= max_sram_index){
-      char aux = lerCharEEPROM(index - max_sram_index);
+    if (index >= MAX_SRAM){
+      char aux = lerCharEEPROM(index - MAX_SRAM);
       return aux;
     }else{
       return grafo_matriz[index];
@@ -449,8 +451,10 @@ void fleury(){
 
   }
   /* Retorna o grafo apos a execução do algoritmo, com ou sem arestas destruidas */
-  printGrafo();
+  //printGrafo();
   Serial.println(" ");
+  Serial.println(-1);
+
 }
 
 /*
