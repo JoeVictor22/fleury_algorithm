@@ -129,6 +129,9 @@ char vetor_vizinhos[MAX_VERTEX];
 /* Mensagem para caso não seja possivel gerar uma trilha euleriana, armazenada em Flash */
 const char NOT_EULER[] PROGMEM = {"Grafo não possui caminho Fleuriano!\n"};
 
+unsigned long time;
+unsigned long time1;
+
 
 /*
   Durante o setup, definimos o baudrate das portas seriais no pino 1 e 2, e definimos um timeout de 20 segundos para a comunicação serial
@@ -149,10 +152,16 @@ void loop(){
   /* Recebe a matriz de adjacencia */
   recebeMatriz();
 
-  printGrafo();
+  //printGrafo();
   /* Computa a matriz */
+  time = micros();
+  time1 = millis();
   fleury();
-  printGrafo();
+  //printGrafo();
+  time = time - micros();
+  time1 = time1 - millis();
+  Serial.println(time);
+  Serial.println(time1);
 
   /* Entre em um modo de consumo */
   dormir();
@@ -208,10 +217,8 @@ void dormir(){
 int calculaMatrizPos(int i, int j){
   if(i < j){
     return (i*(n_vertice-1) - (i-1)*(i)/2 + j - i - 1);
-  }else if (i > j){
-      return (j*(n_vertice-1) - (j-1)*(j)/2 + i - j - 1);
   }else{
-    return -1;
+      return (j*(n_vertice-1) - (j-1)*(j)/2 + i - j - 1);
   }
 }
 /*
