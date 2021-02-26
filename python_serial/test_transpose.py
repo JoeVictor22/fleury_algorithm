@@ -19,9 +19,9 @@ matriz = [
 '''
 def fromMatrixToVector(row, col, N):
    if (row<col):
-      return int(row*(N-1) - (row-1)*((row-1) + 1)/2 + col - row - 1)
+      return int(row*(N-1) - (row-1)*(row)/2 + col - row - 1)
    elif (col<row):
-      return int(col*(N-1) - (col-1)*((col-1) + 1)/2 + row - col - 1)
+      return int(col*(N-1) - (col-1)*(col)/2 + row - col - 1)
    else:
       return -1
 
@@ -36,7 +36,7 @@ def create(size):
 length = 5
 
 
-matriz = create(length)
+matriz = create(int(length))
 
 
 index = 0
