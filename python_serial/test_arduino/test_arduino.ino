@@ -129,8 +129,9 @@ char vetor_vizinhos[MAX_VERTEX];
 /* Mensagem para caso não seja possivel gerar uma trilha euleriana, armazenada em Flash */
 const char NOT_EULER[] PROGMEM = {"Grafo não possui caminho Fleuriano!\n"};
 
-unsigned long time;
-unsigned long time1;
+unsigned long startMicros;
+unsigned long endMicros;
+unsigned long delta;
 
 
 /*
@@ -154,14 +155,12 @@ void loop(){
 
   //printGrafo();
   /* Computa a matriz */
-  time = micros();
-  time1 = millis();
+  startMicros = micros();
   fleury();
   //printGrafo();
-  time = time - micros();
-  time1 = time1 - millis();
-  Serial.println(time);
-  Serial.println(time1);
+  endMicros = micros();
+  delta = endMicros - startMicros;
+  Serial.println(delta);
 
   /* Entre em um modo de consumo */
   dormir();
